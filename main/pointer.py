@@ -8,6 +8,12 @@ Address : Place du Levant 3, 1348 Louvain-la-Neuve, BELGIUM
 email : firstname.lastname@uclouvain.be
 """
 
+"""
+This module handles the pointer version of a file when it is no longer stored
+on the device.
+"""
+
 class Pointer:
+    
     
     
