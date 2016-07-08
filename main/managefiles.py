@@ -13,6 +13,29 @@ This module handles the file uploading to and from their storage locations
 on the dataservers or clouds
 """
 
-class ManageFiles:
+def uploadfile(f,loc):
+    """
+    Upload the file to location loc
+    """
+def downloadfile(fname,loc):
+    """
+    Download the file with the file name fname from the location loc
+    """
+    
+    
 
+    
+class Myfile:
+    
+    def __init__(self,f):
+        """
+        Construct a myfile object from a file f 
+        """
+        None
+        
+        
+    def tofile(self):
+        """
+        From the myfile object, produce the original file
+        """
     

@@ -26,3 +26,15 @@ class SecretSharingScheme:
         
     def reshare(self,shareslist):
         raise NotImplementedError('subclasses must override reshare()!')
+        
+    def encode(self,s):
+        """
+        encode binary string s into the right format for further sharing
+        """
+        raise NotImplementedError('subclasses must override encode()!')
+        
+    def decode(self,m):
+        """
+        decode m from the sharing format back to the binary string
+        """
+        raise NotImplementedError('subclasses must override decode()!')

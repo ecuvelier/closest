@@ -15,5 +15,7 @@ on the device.
 
 class Pointer:
     
-    
-    
+    def __init__(self,f):
+        self.filename
+        self.shareslist = []
+        
