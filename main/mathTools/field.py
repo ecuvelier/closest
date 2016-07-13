@@ -60,11 +60,11 @@ class Field(fingexp.FingExp):
         return FieldElem(x,self)
 
     def random(self,low=1,high=None):
-        ''' Return a random element of the Field
+        ''' Return a random element of the Field except 0
         '''
         if high == None :
             high = int(self.p-1)
-        rand = randint(low,high)
+        rand = randint(int(low),int(high))
         return self.elem(rand)
 
     def __eq__(self, other):
@@ -262,6 +262,9 @@ class FieldElem():
         return self.F.div(self,other)
 
     def __str__(self):
+        return str(self.val)
+        
+    def __repr__(self):
         return str(self.val)
 
     def iszero(self):
