@@ -9,7 +9,7 @@ email : firstname.lastname@uclouvain.be
 """
 
 from mathTools.field import Field
-import gmpy
+import pickle
 
 class SecretSharingScheme:
     """
@@ -19,12 +19,27 @@ class SecretSharingScheme:
         
     def share(self,message):
         raise NotImplementedError('subclasses must override share()!')
+        
+    def sharelist(self,messageslist):
+        listofsharesofmessages = []
+        for message in messageslist :
+            shareslist = self.share(message)
+            listofsharesofmessages.append(shareslist)
+        return listofsharesofmessages
     
     def retrieve(self,shareslist):
         """
         shareslist is a list of different shares
         """
         raise NotImplementedError('subclasses must override retrieve()!')
+        
+    def retrievelist(self,listofsharesofmessages):
+        
+        messageslist = []
+        for shareslist in listofsharesofmessages :
+            message = self.retrieve(shareslist)
+            messageslist.append(message)
+        return messageslist
         
     def reshare(self,shareslist):
         raise NotImplementedError('subclasses must override reshare()!')
@@ -41,27 +56,35 @@ class SecretSharingScheme:
         """
         raise NotImplementedError('subclasses must override decode()!')
         
+    def save(self,filename):
+        """
+        save the secret sharing scheme into the file 'filename' using pickle
+        """
+        f = open(filename, 'w')
+        pickle.dump(f,self)
+        f.close()
+        
         
 class ShamirSecretSharing(SecretSharingScheme):
     
-    def __init__(self,p,t,n):
+    def __init__(self,F,t,n):
         """
-        - p is the size of the prime field used
+        - F is the prime field used
         - t is the threshold of shares to collect in order to recombine a message
         - n is the number of shares created when sharing a message
         """
-        assert (type(p) is int) or (type(p) == type(gmpy.mpz(0))), "p is not an integer: %r" % p
+        
+        assert type(F) is Field
         assert type(t) is int, "t is not an integer: %r" % t
         assert type(n) is int, "n is not an integer: %r" % n
-        self.p = p
         assert t<= n, "threshold t must be <= than n"
         assert t>1, "threshold t must be >1 %r" % t
+        
         self.t = t
         self.n = n
         
-        self.F = Field(p)
-        
-        
+        self.F = F
+        self.p = F.p # order of F
     
     def share(self,message):
         
@@ -87,7 +110,7 @@ class ShamirSecretSharing(SecretSharingScheme):
                 ai = F.random() # in F* (because we want a polynom of degree t)
             A += (ai,)
            
-        print 'A',A
+        #print 'A',A
         
         shareslist = []
         for i in range(n):
@@ -138,7 +161,7 @@ class ShamirSecretSharing(SecretSharingScheme):
         
         n = self.n
         k = len(shareslist)
-        assert k > self.t
+        assert k > self.t # Not enough shares to reconstruct the message!
         if k < n :
             print 'Warning : shares missing!\n You might want to rebuild the sharing by trigering retrieve(sharelist)->m then share(m).' #TODO: triggering mechanism? 
         
@@ -161,14 +184,14 @@ class ShamirSecretSharing(SecretSharingScheme):
         
         k = len(s)
         messageslist = []
-        lp = len(bin(self.p))-2 # bit length of p
-        assert k % (lp-1) == 0 # k must be a multiple of the binary lenght of p, minus 1 (in order to avoid overflow)
-        d = k/(lp-1) # number of blocks of size lp into k
-        
+        lp = len(bin(self.p))-3 # bit length of p minus 1
         index = 0
-        for i in range(d):
+        
+        while index < k :
             ms = s[index:index+lp]
-            m = F.elem(int(ms))
+            while len(ms)< lp:
+                ms = ms+'0'
+            m = F.elem(int(ms,2))
             messageslist.append(m)
             index += lp
             
@@ -179,9 +202,13 @@ class ShamirSecretSharing(SecretSharingScheme):
         """
         decode m from the sharing format back to the binary string
         """
+        lp = len(bin(self.p))-3
         s =''
         for m in messageslist:
             ms = bin(m.val)
-            s += ms[2:]
+            sm = ms[2:]
+            while len(sm)<lp :
+                sm = '0'+sm
+            s += sm
             
         return s
