@@ -29,11 +29,15 @@ class SecretSharingScheme:
     
     def retrieve(self,shareslist):
         """
-        shareslist is a list of different shares
+        shareslist is a list of different shares of one message
         """
         raise NotImplementedError('subclasses must override retrieve()!')
         
     def retrievelist(self,listofsharesofmessages):
+        """
+        listofsharesofmessages contains a list of shares each message, there are
+        k messages where k = len(listofsharesofmessages)
+        """
         
         messageslist = []
         for shareslist in listofsharesofmessages :
@@ -61,8 +65,14 @@ class SecretSharingScheme:
         save the secret sharing scheme into the file 'filename' using pickle
         """
         f = open(filename, 'w')
-        pickle.dump(f,self)
+        pickle.dump(self,f)
         f.close()
+        
+    def __str__(self):
+        return 'Abstract Secret Sharing Scheme object'
+        
+    def __repr__(self):
+        return str(self)
         
         
 class ShamirSecretSharing(SecretSharingScheme):
@@ -212,3 +222,6 @@ class ShamirSecretSharing(SecretSharingScheme):
             s += sm
             
         return s
+        
+    def __str__(self):
+        return 't-out-of-n Shamir Secret Sharing Scheme with the following parameters:\n Field :'+str(self.F)+'\n n :'+str(self.n)+'\n t :'+str(self.t)

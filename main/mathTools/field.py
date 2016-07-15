@@ -11,9 +11,11 @@ email : firstname.lastname@uclouvain.be
 from numpy import *
 import gmpy
 from Crypto.Random.random import randint
-import random as rd
+#import random as rd
 import tools.fingexp as fingexp
 import tools.utils as utils
+
+#TODO : clean this module to keep only needed elements
 
 
 class Field(fingexp.FingExp):
@@ -24,10 +26,10 @@ class Field(fingexp.FingExp):
         '''
         self.F = self
         self.p = gmpy.mpz(p) # prime modulus
-        self.char = self.p # characteristic
-        self.q = self.p+1 # order+1 #TODO : correct?
+        #self.char = self.p # characteristic
+        #self.q = self.p+1 # order+1 #TODO : correct?
         assert gmpy.is_prime(p)
-        self.rep = None
+        #self.rep = None
         self.g = None
         '''
         g is a random quadratic residue used to compute square roots and it is
@@ -221,7 +223,7 @@ class FieldElem():
         #assert isinstance(F,Field)
         self.F = F
         self.val = gmpy.mpz(val)
-        self.poly = polynom(self.F,[self])
+        #self.poly = polynom(self.F,[self])
 
         #self.to_fingerprint = ["F", "val"]
         #self.to_export = {"fingerprint": ["F"],
@@ -330,7 +332,7 @@ class FieldElem():
     def jsonable(self):
         return {'type': 'FieldElem', 'F': self.F, 'val': self.val}
 
-
+"""
 class ExtensionField(Field):
     '''
     This class defines extension fields and inherits field methods.
@@ -1039,5 +1041,5 @@ class polynom:
 
     def jsonable(self):
         return {'type': 'polynomial', 'F': self.F, 'coeficients': self.coef, 'degree': self.deg}
-
+"""
 

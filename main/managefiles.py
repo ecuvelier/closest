@@ -64,6 +64,7 @@ def loadPointer(filename):
     f = open(filename,'r')
     mysharedfile = pickle.load(f)
     f.close()
+    assert type(mysharedfile) is Mysharedfile # the pointer is not a Mysharedfile object
     mysharedfile.loadSecretSharingSchemefromfile()
 
     
@@ -132,10 +133,17 @@ class Mysharedfile:
         to avoid saving multiple times unnecesary object, we explicitly do not
         save self.listofsharesofmessages and self.SSS
         """
-        assert self.filename != ''
-        assert self.filenameofSSS != ''
+        assert self.filename != '' # Cannot save a pointer to a blank name
+        assert self.filenameofSSS != '' # The pointer must contain the filename of a Secret Sharing Scheme SSS
         pointertomysharedfile = Mysharedfile(self.filename, None, self.filenameofSSS, [], self.epoch)
-        s = 'pointerto'+self.filename
+        s = 'pointerto'+self.filename+'.pointer'
         f = open(s,'w')
         pickle.dump(pointertomysharedfile,f)
         f.close()
+        
+    def __str__(self):
+        s = 'Pointer to '+self.filename+' created on '+str(time.ctime(self.timestamp))+'\n this pointer uses the SSS '+str(self.SSS)+'\n stored in '+self.filenameofSSS+'\n it also should refresh every '+str(self.epoch)+' seconds'
+        return s
+        
+    def __repr__(self):
+        return str(self)
