@@ -73,7 +73,7 @@ sb = mf.toChar(bx)
 print s == sb
 
 
-try:
+try:save
     f = open('test.png','r')
 except :
     print 'nope'

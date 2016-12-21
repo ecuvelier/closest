@@ -142,6 +142,37 @@ class Mysharedfile:
         pickle.dump(pointertomysharedfile,f)
         f.close()
         
+    def saveShares(self):
+        """
+        This saves the shares into files (using pickles) where the filenames are
+        generated as follow : self.filename+'Number of message'+'number of share'
+        """
+        sList = []
+        for k in range(len(self.listofsharesofmessages)) :
+            sItem = []
+            shares_of_message = self.listofsharesofmessages[k]
+            for j in range(len(shares_of_message)) :
+                share = shares_of_message[j]
+                s = self.filename+str(k)+str(j)+'.share'
+                f = open(s,'w')
+                pickle.dump(share,f)
+                f.close()
+                sItem.append(s)
+            sList.append(sItem)
+                
+        return sList
+        
+    def rebuilt_listofsharesmessages(self,sList):
+        LOSM = []
+        for sItem in sList:
+            LOSMitem = []
+            for s in sItem :
+                f = open(s,'r')
+                share = pickle.load(f)
+                LOSMitem.append(share)
+            LOSM.append(LOSMitem)
+        self.listofsharesofmessages = LOSM
+        
     def __str__(self):
         s = 'Pointer to '+self.filename+' created on '+str(time.ctime(self.timestamp))+'\n this pointer uses the SSS '+str(self.SSS)+'\n stored in '+self.filenameofSSS+'\n it also should refresh every '+str(self.epoch)+' seconds'
         return s
