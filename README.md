@@ -2,4 +2,4 @@
 Cloud Secure Storage via Secret Sharing
 
 
--- new features coming --
+-- new features coming soon --
