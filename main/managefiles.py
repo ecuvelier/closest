@@ -11,6 +11,7 @@ email : firstname.lastname@uclouvain.be
 import pickle
 import secretsharing as sss
 import time
+import os
 
 
 """
@@ -67,6 +68,19 @@ def loadPointer(filename):
     f.close()
     assert type(mysharedfile) is Mysharedfile # the pointer is not a Mysharedfile object
     mysharedfile.loadSecretSharingSchemefromfile()
+
+def shareToBin(share):
+    ai,si = share
+    return toBin(str(ai)+'\n'+str(si))
+
+def binToShare(F,binshare):
+    bs1,bs2 = binshare
+    sbs1 = toChar(bs1)
+    sbs2 = toChar(bs2)
+    ai = F.elem(int(sbs1))
+    si = F.elem(int(sbs2))
+    return ai,si
+    
 
     
 class Mysharedfile:
@@ -142,20 +156,31 @@ class Mysharedfile:
         pickle.dump(pointertomysharedfile,f)
         f.close()
         
-    def saveShares(self):
+    def saveShares(self,directoryname, numberofshares = 0):
         """
-        This saves the shares into files (using pickles) where the filenames are
-        generated as follow : self.filename+'Number of message'+'number of share'
+        This saves the shares into files (using pickles) that are stored into
+        ./directory/sharej where j range from 0 to numberofshares
+        if numberofshares is default, the number of shares used is n of the Secret Sharing Scheme self.SSS
         """
         sList = []
+        if numberofshares == 0 :
+            n = self.SSS.n
+        else :
+            n = numberofshares
+        sdir = [0]*n
+        for j in range(n) :
+            sdir[j] = directoryname+'/shares_of_party_'+str(j)+'/'
+            os.mkdir(s)
         for k in range(len(self.listofsharesofmessages)) :
             sItem = []
             shares_of_message = self.listofsharesofmessages[k]
             for j in range(len(shares_of_message)) :
                 share = shares_of_message[j]
-                s = self.filename+str(k)+str(j)+'.share'
+                s = sdir[j]+self.filename+'_share_of_msg_'+str(k)+'.share' #TODO: maybe filename should not appear, use (salted) hash somehow?
                 f = open(s,'w')
-                pickle.dump(share,f)
+                #pickle.dump(share,f)
+                binshare = shareToBin(share)
+                f.write(binshare)
                 f.close()
                 sItem.append(s)
             sList.append(sItem)
@@ -168,7 +193,11 @@ class Mysharedfile:
             LOSMitem = []
             for s in sItem :
                 f = open(s,'r')
-                share = pickle.load(f)
+                #share = pickle.load(f)
+                binsharel1 = f.readline()
+                binsharel2 = f.readline()
+                f.close()
+                share = binToShare(self.SSS.F,(binsharel1,binsharel2))
                 LOSMitem.append(share)
             LOSM.append(LOSMitem)
         self.listofsharesofmessages = LOSM
