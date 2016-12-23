@@ -83,8 +83,8 @@ else :
 """
 
 sharedfile = mf.Mysharedfile('testbis.png.tar.gz', SSS = None, filenameofSSS = './SSS/SSS512')
-#sharedfile.loadSecretSharingSchemefromfile()
-#sharedfile.sharefile()
+sharedfile.loadSecretSharingSchemefromfile()
+sharedfile.sharefile()
 #sharedfile.save()
 #sharedfile.filename = 'rebuildedfile.png.tar.gz'
 #sharedfile.rebuildfile()

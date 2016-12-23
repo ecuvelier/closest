@@ -60,6 +60,18 @@ class SecretSharingScheme:
         """
         raise NotImplementedError('subclasses must override decode()!')
         
+    def shareToBin(self,share):
+        """
+        Turn a share into a binary string
+        """
+        raise NotImplementedError('subclasses must override shareToBin()!')
+        
+    def binToShare(self,binshare1,binshare2):
+        """
+        Turn two binary strings into a share 
+        """
+        raise NotImplementedError('subclasses must override binToShare()!')
+        
     def save(self,filename):
         """
         save the secret sharing scheme into the file 'filename' using pickle
@@ -222,6 +234,17 @@ class ShamirSecretSharing(SecretSharingScheme):
             s += sm
             
         return s
+        
+    def shareToBin(self, share):
+        ai,si = share
+        return bin(ai.val)+'\n'+bin(si.val)
+        
+    def binToShare(self, bs1,bs2 ):
+        sbs1 = int(bs1,2)
+        sbs2 = int(bs2,2)
+        ai = self.F.elem(sbs1)
+        si = self.F.elem(sbs2)
+        return ai,si
         
     def __str__(self):
         return 't-out-of-n Shamir Secret Sharing Scheme with the following parameters:\n Field :'+str(self.F)+'\n n :'+str(self.n)+'\n t :'+str(self.t)

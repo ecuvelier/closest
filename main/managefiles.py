@@ -68,18 +68,6 @@ def loadPointer(filename):
     f.close()
     assert type(mysharedfile) is Mysharedfile # the pointer is not a Mysharedfile object
     mysharedfile.loadSecretSharingSchemefromfile()
-
-def shareToBin(share):
-    ai,si = share
-    return toBin(str(ai)+'\n'+str(si))
-
-def binToShare(F,binshare):
-    bs1,bs2 = binshare
-    sbs1 = toChar(bs1)
-    sbs2 = toChar(bs2)
-    ai = F.elem(int(sbs1))
-    si = F.elem(int(sbs2))
-    return ai,si
     
 
     
@@ -162,15 +150,20 @@ class Mysharedfile:
         ./directory/sharej where j range from 0 to numberofshares
         if numberofshares is default, the number of shares used is n of the Secret Sharing Scheme self.SSS
         """
+        SSS = self.SSS
         sList = []
         if numberofshares == 0 :
-            n = self.SSS.n
+            n = SSS.n
         else :
             n = numberofshares
         sdir = [0]*n
+        try :
+            os.mkdir(directoryname)
+        except :
+            pass #the directory already exists
         for j in range(n) :
             sdir[j] = directoryname+'/shares_of_party_'+str(j)+'/'
-            os.mkdir(s)
+            os.mkdir(sdir[j])
         for k in range(len(self.listofsharesofmessages)) :
             sItem = []
             shares_of_message = self.listofsharesofmessages[k]
@@ -179,7 +172,7 @@ class Mysharedfile:
                 s = sdir[j]+self.filename+'_share_of_msg_'+str(k)+'.share' #TODO: maybe filename should not appear, use (salted) hash somehow?
                 f = open(s,'w')
                 #pickle.dump(share,f)
-                binshare = shareToBin(share)
+                binshare = SSS.shareToBin(share)
                 f.write(binshare)
                 f.close()
                 sItem.append(s)
@@ -188,6 +181,7 @@ class Mysharedfile:
         return sList
         
     def rebuilt_listofsharesmessages(self,sList):
+        SSS = self.SSS
         LOSM = []
         for sItem in sList:
             LOSMitem = []
@@ -197,7 +191,7 @@ class Mysharedfile:
                 binsharel1 = f.readline()
                 binsharel2 = f.readline()
                 f.close()
-                share = binToShare(self.SSS.F,(binsharel1,binsharel2))
+                share = SSS.binToShare(binsharel1,binsharel2)
                 LOSMitem.append(share)
             LOSM.append(LOSMitem)
         self.listofsharesofmessages = LOSM
