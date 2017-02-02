@@ -10,7 +10,7 @@ email : firstname.lastname@uclouvain.be
 
 from tkinter import filedialog, messagebox
 import os
-import newproject
+import project_window
 import pickle
 import mainframe as mf
 
@@ -88,7 +88,7 @@ def adddir(tree):
         tree.set(i,1,'not shared')
     
 def new_project(root,nb):
-    newproject.new_project_window(root,nb)
+    project_window.create_project_window(root,nb)
     
 def save_project(*args):
     filename = filedialog.asksaveasfilename()
@@ -104,4 +104,16 @@ def closetab(notebook,tab):
     r = messagebox.askyesno(message='Are you sure you want to close the project?',icon='question', title='Close Project')
     if r :
         notebook.forget(tab)
+        
+def cancel_project(root,projectwindow):
+    pass
+        
+def synch_epoch(*args):
+    pass
+
+def synch_depoch(*args):
+    pass
+
+def synch_pm(*args):
+    pass
     

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created in 2016
+Created in 2016-2017
 
 Author : Edouard Cuvelier
 Affiliation : Université catholique de Louvain - ICTEAM - UCL Crypto Group

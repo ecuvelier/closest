@@ -27,7 +27,6 @@ root.title('Closest -- Cloud Secure Storage via Secret Sharing')
 nb = ttk.Notebook(root)
 nb.grid(column=0, row=0, sticky=(N, S, E, W))
 mainf1 = mf.create_mainframe(nb)
-
 nb.add(mainf1, text='Project One')
 
 
@@ -51,12 +50,10 @@ menu_project.add_command(label='Modify Project')
 
 
 
-
-
-
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 root.update()
-root.minsize(root.winfo_width(), root.winfo_height())
-nb.forget(mainf1)
+#print((root.winfo_width(), root.winfo_height()))
+root.minsize(1300, 950)
+#nb.forget(mainf1)
 root.mainloop()
