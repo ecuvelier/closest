@@ -80,14 +80,33 @@ def create_project_window(root,nb,project=None):
     
     LocationDic = {}
     
+    thresholdlabel = ttk.Label(locframe, text='Threshold :')
+    thresholdlabel.grid(column=20, row=10)
+    thresholdVar = StringVar()
+    thresholdcb = ttk.Combobox(locframe, textvariable=thresholdVar)
+    thresholdcb.grid(column=30, row=10, sticky=(W, E))
+    thresholdcb['values'] = ('2')
+    thresholdcb.current(0)
+    thresholdcb.configure(state='readonly')
+    
     def closeLoctab(notebook,tab):
         #i = number_of_locations.get()
         #number_of_locations.set(int(i)-1)
+        T = thresholdcb['values']
+        lastv = int(T[-1])
+        newT = T[0:len(T)-1]
+        thresholdcb['values'] = newT
+        if int(thresholdVar.get()) >= lastv :
+            thresholdcb.current(len(newT)-1)
         notebook.forget(tab)
     
-    def add_location(notebook,removable = True):
+    def add_location(notebook,removable = True, updateThreshold=True):
         i = number_of_locations.get()
-        
+        if updateThreshold :
+            T = thresholdcb['values']
+            lastv = int(T[-1])
+            T = T+(str(lastv+1),)
+            thresholdcb['values'] = T
         
         newlocframe = ttk.Frame(notebook, padding=(3,3,12,12))
         
@@ -102,6 +121,15 @@ def create_project_window(root,nb,project=None):
         loc_name_entry.grid(column=20, row=10, sticky=(W, E))
         loc_name_entry.insert(0,'Untitled Location')
         
+        locTypelabel = ttk.Label(newlocframe, text='Type :')
+        locTypelabel.grid(column=10, row=15, sticky=(W, E))
+        locTypeVar = StringVar()
+        locTypecb = ttk.Combobox(newlocframe, textvariable=locTypeVar)
+        locTypecb.grid(column=20, row=15, sticky=(W, E))
+        locTypecb['values'] = ('Local','Cloud', 'FTP', 'Other')
+        locTypecb.configure(state='readonly')
+        locTypecb.current(1)
+        
         accessCommandlabel = ttk.Label(newlocframe, text='Access Command :')
         accessCommandlabel.grid(column=10, row=20, sticky=(W, E))
         accessCommandVar = StringVar()
@@ -113,6 +141,7 @@ def create_project_window(root,nb,project=None):
         passwordCommandVar = StringVar()
         passwordCommand_entry = ttk.Entry(newlocframe, width=20, textvariable=passwordCommandVar)
         passwordCommand_entry.grid(column=20, row=30, sticky=(W, E))
+        passwordCommand_entry.configure(show='')
 
         saveAccess = StringVar()
         saveAccessButton = ttk.Checkbutton(newlocframe, text='Remember Password', variable=saveAccess, onvalue='remember pwd', offvalue='forget pwd')
@@ -157,7 +186,7 @@ def create_project_window(root,nb,project=None):
         DEpochCB2.current(1)
         
         patternMasking = StringVar()
-        patternMaskingButton = ttk.Checkbutton(newlocframe, text='Use Pattern Masking', variable=patternMasking, onvalue='pattern masking on', offvalue='pattern masking off')
+        patternMaskingButton = ttk.Checkbutton(newlocframe, text='Use Pattern Masking', variable=patternMasking, onvalue='Pattern Masking Enabled', offvalue='Pattern Masking Disabled')
         patternMaskingButton.grid(column=10, row=60, sticky=(W, E))
      
         notebook.add(newlocframe, text='Storage Location '+i)
@@ -167,14 +196,17 @@ def create_project_window(root,nb,project=None):
         
         number_of_locations.set(int(i)+1)
         
-        location = {'nlf':newlocframe,'name':locNameVar,'ac':accessCommandVar,'pwd':passwordCommandVar,'sa':saveAccess,'e1':EpochVar1,'e2':EpochVar2,'de1':DEpochVar1,'de2':DEpochVar1,'pm':patternMasking}
+        location = {'nlf':newlocframe,'name':locNameVar,'type':locTypeVar,'ac':accessCommandVar,'pwd':passwordCommandVar,'sa':saveAccess,'e1':EpochVar1,'e2':EpochVar2,'de1':DEpochVar1,'de2':DEpochVar2,'pm':patternMasking}
         LocationDic[i]=location
-        
+    
+    
     
     addlocbutton = ttk.Button(locframe, text='Add Location',command=lambda : add_location(locnb))
     addlocbutton.grid(column=10, row=10, sticky=(E, W))
-    add_location(locnb,False)
-    add_location(locnb,False)
+    
+    add_location(locnb,False,False)
+    add_location(locnb,False,False)
+    
     
     ################ Tool FRAME ########################
     
@@ -182,7 +214,20 @@ def create_project_window(root,nb,project=None):
     toolframe.grid(column=10,row=30, sticky=(N,S,E,W))
     
     def get_project():
-        pass
+        projectDic = {}
+        projectDic['name'] = nameVar.get()
+        projectDic['SSS'] = SSSVar.get()
+        projectDic['Mod'] = ModVar.get()
+        projectDic['Nb_of_loc'] = number_of_locations.get()
+        projectDic['Threshold'] = thresholdVar.get()
+        locDic = {}
+        for lockey in LocationDic :
+            locDic[lockey] = {'name':LocationDic[lockey]['name'].get(),'type':LocationDic[lockey]['type'].get(),'ac':LocationDic[lockey]['ac'].get(),'pwd':LocationDic[lockey]['pwd'].get(),'sa':LocationDic[lockey]['sa'].get(),'e1':LocationDic[lockey]['e1'].get(),'e2':LocationDic[lockey]['e2'].get(),'de1':LocationDic[lockey]['de1'].get(),'de2':LocationDic[lockey]['de2'].get(),'pm':LocationDic[lockey]['pm'].get()}
+        projectDic['locDic'] = locDic
+        
+        #print(projectDic)
+        return projectDic
+        
     
     Save_and_OpenButton = ttk.Button(toolframe, text="Save and Open",command= lambda : com.save_open_project(root,projectwindow,nb,get_project()))
     Save_and_OpenButton.grid(column=10, row=10)

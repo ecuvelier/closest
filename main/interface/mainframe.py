@@ -13,11 +13,12 @@ from tkinter import ttk
 import commands as com
 
 
-def create_mainframe(parent,project=None):
-    if not project == None :
-        projname, SSSvar, Modvar, nbSLvar, threshold, patternmasking, EP, DEP, LOC ,fileList = project
-    else :
-        projname, SSSvar, Modvar, nbSLvar, threshold, patternmasking, EP, DEP, LOC ,fileList = 'empty','','',2,2,False,None,None,[(-1,'','','',False),(-1,'','','',False),(),(),()],[]
+def create_mainframe(parent,projectDic={}):
+    if projectDic == {} :
+        projectDic['SSS'] = ''
+        projectDic['Threshold'] = ''
+        projectDic['Nb_of_loc'] = ''
+        projectDic['locDic'] = {}
         
     mainframe = ttk.Frame(parent, padding=(3,3,12,12))
     mainframe.grid(column=0, row=0, sticky=(N, S, E, W))
@@ -38,11 +39,11 @@ def create_mainframe(parent,project=None):
     toolframe = ttk.Frame(mainframe)
     toolframe.grid(column=1,row=2, columnspan = 10, sticky=(E))
     
-    bclose = ttk.Button(toolframe, text="❌",command= lambda : com.closetab(parent,mainframe))
+    bclose = ttk.Button(toolframe, text="Close ❌",command= lambda : com.closetab(parent,mainframe))
     bclose.grid(column=3, row=0)
-    bopen = ttk.Button(toolframe, text="",command = lambda : com.open_project(parent))
-    bopen.grid(column=1, row=0)
-    bsave = ttk.Button(toolframe, text="", command = lambda : com.quick_save_project(projname))
+    #bopen = ttk.Button(toolframe, text="",command = lambda : com.open_project(parent))
+    #bopen.grid(column=1, row=0)
+    bsave = ttk.Button(toolframe, text="Save ", command = lambda : com.quick_save_project(projname))
     bsave.grid(column=2, row=0)
     
     
@@ -117,15 +118,13 @@ def create_mainframe(parent,project=None):
     
     parameters = StringVar()
     splus = ''
-    if SSSvar == 'Shamir' :
-        splus = ' with '+str(Modvar)+'-bit Module'
+    if projectDic['SSS'] == 'Shamir' :
+        splus = ' with '+projectDic['Mod']+'-bit Module'
         
-    sparam = str(threshold)+'-out-of-'+str(nbSLvar)+' '+str(SSSvar)+' Secret Sharing Scheme'+splus
+    sparam = projectDic['Threshold']+'-out-of-'+projectDic['Nb_of_loc']+' '+projectDic['SSS']+' Secret Sharing Scheme'+splus
     paramlabel = ttk.Label(paramframe, text=sparam)
     paramlabel.grid(column=2, row=2, sticky=(W, E))
     parameters.set(sparam)
-
-    
     
     for child in paramframe.winfo_children(): 
         child.grid_configure(padx=5, pady=5)
@@ -133,9 +132,45 @@ def create_mainframe(parent,project=None):
     ################ PLACES FRAME ########################
     emplaframe = ttk.Labelframe(mainframe, text='Storage Locations')
     emplaframe.grid(column=10,row=5, sticky=(N,S,E,W))
-   
+    
+    emplanb = ttk.Notebook(emplaframe)
+    emplanb.grid(column=10, row=10, sticky=(N, S, E, W))
+    
+    def add_location(loc):
+        
+        newlocframe = ttk.Frame(emplanb, padding=(3,3,12,12))
+        
+        locTypelabel = ttk.Label(newlocframe, text='Type: '+loc['type'])
+        locTypelabel.grid(column=10, row=10, sticky=(W, E))
+        
+        passwordCommandlabel = ttk.Label(newlocframe, text='Password: ')
+        passwordCommandlabel.grid(column=10, row=20, sticky=(W, E))
+        passwordCommandVar = StringVar()
+        passwordCommand_entry = ttk.Entry(newlocframe, width=20, textvariable=passwordCommandVar)
+        passwordCommand_entry.grid(column=20, row=20, sticky=(W, E))
+        passwordCommand_entry.configure(show='')
+        passwordCommand_entry.insert(0,loc['pwd'])
+        
+        Epochlabel = ttk.Label(newlocframe, text='Epoch: '+loc['e1']+' '+loc['e2'])
+        Epochlabel.grid(column=10, row=30, sticky=(W, E))
+        
+        DEpochlabel = ttk.Label(newlocframe, text='Delta of Epoch: '+loc['de1']+' '+loc['de2'])
+        DEpochlabel.grid(column=10, row=40, sticky=(W, E))
+        
+        PMlabel = ttk.Label(newlocframe, text = loc['pm'])
+        PMlabel.grid(column=10, row=50, sticky=(W, E))
+        
+        checkstatus = ttk.Button(newlocframe, text="Check")
+        checkstatus.grid(column=10, row=60)
+     
+        emplanb.add(newlocframe, text=loc['name'])
+        
+        for child in newlocframe.winfo_children(): 
+            child.grid_configure(padx=5, pady=5)
+
+    """
     #emplacement1 = StringVar()
-    ttk.Label(emplaframe, text=LOC[0][1]).grid(column=4, row=2, sticky=(W, E))
+    ttk.Label(emplaframe, text='').grid(column=4, row=2, sticky=(W, E))
     ttk.Label(emplaframe, text="Storage Location 1 :").grid(column=2, row=2, sticky=W)
     ttk.Label(emplaframe, text=" Status :").grid(column=5, row=3, sticky=(W,E))
     checkstatus1 = ttk.Button(emplaframe, text="Check")
@@ -143,7 +178,7 @@ def create_mainframe(parent,project=None):
     #emplacement1.set(LOC[0][1])
    
     #emplacement2 = StringVar()
-    ttk.Label(emplaframe, text=LOC[1][1]).grid(column=4, row=5, sticky=(W, E))
+    ttk.Label(emplaframe, text='').grid(column=4, row=5, sticky=(W, E))
     ttk.Label(emplaframe, text="Storage Location 2 :").grid(column=2, row=5, sticky=W)
     ttk.Label(emplaframe, text=" Status :").grid(column=5, row=6, sticky=(W,E))
     checkstatus2 = ttk.Button(emplaframe, text="Check")
@@ -157,11 +192,13 @@ def create_mainframe(parent,project=None):
     ttk.Label(emplaframe, text=" Status :").grid(column=5, row=9, sticky=(W,E))
     checkstatus3 = ttk.Button(emplaframe, text="Check" )
     checkstatus3.grid(column=2, row=9,sticky=(W,E))
+    
     if int(nbSLvar) >= 3:
         emp3Lab['text'] = LOC[2][1]
     else :
         emp3Lab['text'] = 'disabled'
         checkstatus3.configure(state='disabled')
+    
    
     #emplacement4 = StringVar()
     emp4Lab = ttk.Label(emplaframe)
@@ -170,11 +207,13 @@ def create_mainframe(parent,project=None):
     ttk.Label(emplaframe, text=" Status :").grid(column=5, row=12, sticky=(W,E))
     checkstatus4 = ttk.Button(emplaframe, text="Check")
     checkstatus4.grid(column=2, row=12,sticky=(W,E))
+    
     if int(nbSLvar) >= 4:
         emp4Lab['text']=LOC[3][1]
     else :
         emp4Lab['text']='disabled'
         checkstatus4.configure(state='disabled')
+    
    
     #emplacement5 = StringVar()
     emp5Lab =ttk.Label(emplaframe)
@@ -183,14 +222,19 @@ def create_mainframe(parent,project=None):
     ttk.Label(emplaframe, text=" Status :").grid(column=5, row=15, sticky=(W,E))
     checkstatus5 = ttk.Button(emplaframe, text="Check")
     checkstatus5.grid(column=2, row=15,sticky=(W,E))
+    
     if int(nbSLvar) == 5:
         emp5Lab['text']=LOC[4][1]
     else :
         emp5Lab['text']='disabled'
         checkstatus5.configure(state='disabled')
+    """
+    
+    for loc in projectDic['locDic']:
+        add_location(projectDic['locDic'][loc])
    
     checkplaces = ttk.Button(emplaframe, text="Check All",command=lambda:mainframe.update())
-    checkplaces.grid(column=2, row=20,sticky=(W,E))
+    checkplaces.grid(column=10, row=20)
     
     for child in emplaframe.winfo_children(): 
         child.grid_configure(padx=5, pady=5)

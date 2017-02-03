@@ -57,27 +57,31 @@ def addfile(tree):
 def open_project(nb):
     filename = filedialog.askopenfilename()
     f = open(filename,'rb')
-    project = pickle.load(f)
+    projectDic = pickle.load(f)
     f.close()
-    name, SSSvar, Modvar, nbSLvar, threshold, patternmasking, EP, DEP, LOC, fileList = project
+    print(projectDic)
     
-    newframe = mf.create_mainframe(nb,project)
-    nb.add(newframe, text=name)
+    newframe = mf.create_mainframe(nb,projectDic)
+    nb.add(newframe, text=projectDic['name'])
     
-def save_open_project(root,win,nb,project):
-    #print(project)
-    name, SSSvar, Modvar, nbSLvar, threshold, patternmasking, EP, DEP, LOC, fileList = project
-    epochvar1,epochvar2 = EP
-    depochvar1,depochvar2 = DEP
-    filename = filedialog.asksaveasfilename(initialfile=name,defaultextension='.closest')
+def save_open_project(root,win,nb,projectDic):
+    print(projectDic)
+    filename = filedialog.asksaveasfilename(initialfile=projectDic['name'],defaultextension='.closest')
+    projDCopy = projectDic.copy()
+    for location in projectDic['locDic']:
+        if projectDic['locDic'][location]['sa'] != 'remember pwd':
+            projDCopy['locDic'][location]['sa'] = ''
+        
     f = open(filename,'wb')
-    pickle.dump(project,f)
+    pickle.dump(projDCopy,f)
     f.close()
     
-    newframe = mf.create_mainframe(nb,project)
-    nb.add(newframe, text=name)
+    newframe = mf.create_mainframe(nb,projectDic)
+    nb.add(newframe, text=projectDic['name'])
     win.destroy()
     newframe.focus()
+    
+    root.mainloop()
 
 def adddir(tree):
     s =  filedialog.askdirectory()
@@ -90,9 +94,14 @@ def adddir(tree):
 def new_project(root,nb):
     project_window.create_project_window(root,nb)
     
-def save_project(*args):
-    filename = filedialog.asksaveasfilename()
-    print(filename)
+def save_project(nb):
+    for child in nb.winfo_children():
+        
+    #filename = filedialog.asksaveasfilename(initialfile=projectDic['name'],defaultextension='.closest')
+    #f = open(filename,'wb')
+    #pickle.dump(projectDic,f)
+    #f.close()
+    
 
 def quick_save_project(filename):
     print(filename)
