@@ -14,6 +14,76 @@ import project_window
 import pickle
 import mainframe as mf
 
+def getname(s):
+    """
+    return the substring k of a string s of the form '*/k'
+    """
+    k = ''
+    for i in range(len(s)-1,-1,-1):
+        c = s[i]
+        if c == '/':
+            return k
+        else :
+            k = c + k
+    return k
+
+
+################### MENU INTERFACE ################################
+
+def new_project(root,nb,currentProjects):
+    project_window.create_project_window(root,nb,currentProjects)
+    
+def save_project(nb,currentProjects):
+    
+    tabname = nb.select()
+    projectDic = currentProjects[tabname]
+
+    filename = filedialog.asksaveasfilename(initialfile=projectDic['name'],defaultextension='.closest')
+    if not filename == '' and not filename == ():
+        f = open(filename,'wb')
+        pickle.dump(projectDic,f)
+        f.close()
+   
+def open_project(nb,currentProjects):
+    filename = filedialog.askopenfilename()
+    if not filename == '' and not filename == ():
+        f = open(filename,'rb')
+        projectDic = pickle.load(f)
+        f.close()
+        print(projectDic)
+        newframe = mf.create_mainframe(nb,currentProjects,projectDic)
+        #print(newframe)
+        currentProjects[str(newframe)] = projectDic
+        nb.add(newframe, text=projectDic['name'])
+    
+def modify_project(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def about(root):
+    print(root.winfo_width(), root.winfo_height())
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def help_func(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+
+################### MAINFRAME ################################
+
+def quick_save_project(projectDic):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def closetab(notebook,tab):
+    r = messagebox.askyesno(message='Are you sure you want to close the project?',icon='question', title='Close Project')
+    if r :
+        notebook.forget(tab)
+        
+        
+######### EXPLO FRAME ############
+
 def convertsize(t):
     total_size = t
     if total_size > 10**3 :
@@ -46,83 +116,114 @@ def get_size(start_path = '.'):
     return total_size
 
 
-def addfile(tree):
+def addfile(tree,frameid,currentProjects):
     s =  filedialog.askopenfilename()
     if not s == '' and not s == ():
-        i = tree.insert('', 'end',s, text=s)
+        fname = getname(s)
+        tree.insert('', 'end',s, text=fname)
         size = convertsize(os.path.getsize(s))
-        tree.set(i,0,size)
-        tree.set(i,1,'not shared')
-    
-def open_project(nb):
-    filename = filedialog.askopenfilename()
-    f = open(filename,'rb')
-    projectDic = pickle.load(f)
-    f.close()
-    print(projectDic)
-    
-    newframe = mf.create_mainframe(nb,projectDic)
-    nb.add(newframe, text=projectDic['name'])
-    
-def save_open_project(root,win,nb,projectDic):
+        tree.set(s,0,size)
+        tree.set(s,1,'not shared')
+        tree.set(s,4,s)
+        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':''}
+
+def adddir(tree,frameid,currentProjects):
+    s =  filedialog.askdirectory()
+    if not s == '' and not s == ():
+        fname = getname(s)
+        size = convertsize(get_size(s))
+        tree.insert('', 'end',s, text=fname)
+        tree.set(s,0,size)
+        tree.set(s,1,'not shared')
+        tree.set(s,4,s)
+        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':''}
+
+def share(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def recover(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def plan_actions(tree,currentProjects):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def delete(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def updateb(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+######### LOCA FRAME ############
+
+def check(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def checkall(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+######### TASKS FRAME ############
+
+def delete_tasks(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def execute_tasks(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+        
+################## PROJECT WINDOW ####################################
+
+def save_open_project(root,win,nb,projectDic,currentProjects):
     print(projectDic)
     filename = filedialog.asksaveasfilename(initialfile=projectDic['name'],defaultextension='.closest')
     projDCopy = projectDic.copy()
     for location in projectDic['locDic']:
         if projectDic['locDic'][location]['sa'] != 'remember pwd':
             projDCopy['locDic'][location]['sa'] = ''
+            
+    projDCopy['filename'] = filename
         
     f = open(filename,'wb')
     pickle.dump(projDCopy,f)
     f.close()
     
-    newframe = mf.create_mainframe(nb,projectDic)
+    newframe = mf.create_mainframe(nb,currentProjects,projectDic)
     nb.add(newframe, text=projectDic['name'])
+    currentProjects[str(newframe)] = projDCopy
     win.destroy()
     newframe.focus()
     
     root.mainloop()
 
-def adddir(tree):
-    s =  filedialog.askdirectory()
-    if not s == '' and not s == ():
-        size = convertsize(get_size(s))
-        i= tree.insert('', 'end', text=s)
-        tree.set(i,0,size)
-        tree.set(i,1,'not shared')
-    
-def new_project(root,nb):
-    project_window.create_project_window(root,nb)
-    
-def save_project(nb):
-    for child in nb.winfo_children():
-        
-    #filename = filedialog.asksaveasfilename(initialfile=projectDic['name'],defaultextension='.closest')
-    #f = open(filename,'wb')
-    #pickle.dump(projectDic,f)
-    #f.close()
-    
-
-def quick_save_project(filename):
-    print(filename)
-
-def updateb(*args):
+def open_modify_project(nb):
+    messagebox.showinfo(message='Not Implemented Yet')
     pass
 
-def closetab(notebook,tab):
-    r = messagebox.askyesno(message='Are you sure you want to close the project?',icon='question', title='Close Project')
-    if r :
-        notebook.forget(tab)
-        
-def cancel_project(root,projectwindow):
+def save_edited_project(nb):
+    messagebox.showinfo(message='Not Implemented Yet')
     pass
         
 def synch_epoch(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
     pass
 
 def synch_depoch(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
     pass
 
 def synch_pm(*args):
+    messagebox.showinfo(message='Not Implemented Yet')
+    pass
+
+def cancel_project(root,projectwindow):
+    messagebox.showinfo(message='Not Implemented Yet')
     pass
     

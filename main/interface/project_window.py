@@ -12,7 +12,7 @@ from tkinter import *
 from tkinter import ttk
 import commands as com
 
-def create_project_window(root,nb,project=None):
+def create_project_window(root,nb,currentProjects):
     
     projectwindow = Toplevel(root)
     mframe = ttk.Frame(projectwindow, padding=(3,3,12,12))
@@ -29,7 +29,7 @@ def create_project_window(root,nb,project=None):
     menubar.add_cascade(menu=menu_synch, label='Locations')
     
     menu_project.add_command(label='Open Project',command = lambda : com.open_modify_project(nb))
-    menu_project.add_command(label='Save Project',command = com.save_project)
+    menu_project.add_command(label='Save Project',command = lambda : com.save_edited_project(nb))
     
     menu_synch.add_command(label='Synchronize Epoch',command = com.synch_epoch)
     menu_synch.add_command(label='Synchronize Delta Epoch',command = com.synch_depoch)
@@ -224,12 +224,13 @@ def create_project_window(root,nb,project=None):
         for lockey in LocationDic :
             locDic[lockey] = {'name':LocationDic[lockey]['name'].get(),'type':LocationDic[lockey]['type'].get(),'ac':LocationDic[lockey]['ac'].get(),'pwd':LocationDic[lockey]['pwd'].get(),'sa':LocationDic[lockey]['sa'].get(),'e1':LocationDic[lockey]['e1'].get(),'e2':LocationDic[lockey]['e2'].get(),'de1':LocationDic[lockey]['de1'].get(),'de2':LocationDic[lockey]['de2'].get(),'pm':LocationDic[lockey]['pm'].get()}
         projectDic['locDic'] = locDic
+        projectDic['fileDic'] = {}
         
         #print(projectDic)
         return projectDic
         
     
-    Save_and_OpenButton = ttk.Button(toolframe, text="Save and Open",command= lambda : com.save_open_project(root,projectwindow,nb,get_project()))
+    Save_and_OpenButton = ttk.Button(toolframe, text="Save and Open",command= lambda : com.save_open_project(root,projectwindow,nb,get_project(),currentProjects))
     Save_and_OpenButton.grid(column=10, row=10)
     CancelButton = ttk.Button(toolframe, text="Cancel",command= lambda : com.cancel_project(root,projectwindow))
     CancelButton.grid(column=20, row=10)

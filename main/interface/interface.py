@@ -29,6 +29,7 @@ nb.grid(column=0, row=0, sticky=(N, S, E, W))
 #mainf1 = mf.create_mainframe(nb)
 #nb.add(mainf1, text='Project One')
 
+currentProjects = {} # Dictionary saving the project opened for the session #TODO: save and open project of last sessions
 
 
 menubar = Menu(root)
@@ -38,15 +39,17 @@ menu_about = Menu(menubar)
 menu_help = Menu(menubar, name='help')
 
 menubar.add_cascade(menu=menu_project, label='Project')
-menubar.add_cascade(menu=menu_about, label='About')
-menubar.add_cascade(menu=menu_help, label='Help')
+menubar.add_cascade(menu=menu_about, label='?')
 
-menu_project.add_command(label='New Project',command = lambda : com.new_project(root,nb))
-menu_project.add_command(label='Open Project',command = lambda : com.open_project(nb))
-menu_project.add_command(label='Save Project',command = lambda : com.save_project(nb))
+menu_about.add_command(label='Help',command = lambda : com.help_func())
+menu_about.add_command(label='About',command = lambda : com.about(root))
+
+menu_project.add_command(label='New Project',command = lambda : com.new_project(root,nb,currentProjects))
+menu_project.add_command(label='Open Project',command = lambda : com.open_project(nb,currentProjects))
+menu_project.add_command(label='Save Project',command = lambda : com.save_project(nb,currentProjects))
 #menu_project.add_command(label='Copy Project')
 menu_project.add_separator()
-menu_project.add_command(label='Modify Project')
+menu_project.add_command(label='Modify Project',command = lambda : com.modify_project(nb,currentProjects))
 
 
 
@@ -54,6 +57,7 @@ root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 root.update()
 #root.minsize(root.winfo_width(), root.winfo_height())
-root.minsize(1350, 950)
+#print(root.winfo_width(), root.winfo_height())
+root.minsize(1400, 950)
 #nb.forget(mainf1)
 root.mainloop()

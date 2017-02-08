@@ -13,37 +13,60 @@ from tkinter import ttk
 import commands as com
 
 
-def create_mainframe(parent,projectDic={}):
+def create_mainframe(parent,currentProjects,projectDic={}):
     if projectDic == {} :
         projectDic['SSS'] = ''
         projectDic['Threshold'] = ''
         projectDic['Nb_of_loc'] = ''
         projectDic['locDic'] = {}
+        projectDic['fileDic'] = {}
+
         
     mainframe = ttk.Frame(parent, padding=(3,3,12,12))
     mainframe.grid(column=0, row=0, sticky=(N, S, E, W))
     
     mainframe.columnconfigure(5,weight=1)
-    mainframe.columnconfigure(20,weight=1)
-    mainframe.rowconfigure(0,weight=1)
-    mainframe.rowconfigure(3,weight=1)
-    mainframe.rowconfigure(4,weight=1)
-    mainframe.rowconfigure(20,weight=1)
-    mainframe.columnconfigure(1,weight=3)
+    mainframe.columnconfigure(35,weight=1)
+    
+    mainframe.rowconfigure(5,weight=1)
+    mainframe.rowconfigure(15,weight=1)
+    mainframe.rowconfigure(25,weight=1)
+    mainframe.rowconfigure(35,weight=1)
+    
+    
+    mainframe.rowconfigure(20,weight=3)
     mainframe.columnconfigure(10,weight=3)
-    mainframe.rowconfigure(1,weight=3)
-    mainframe.rowconfigure(14,weight=3)
+    
+    mainframe.rowconfigure(30,weight=3)
+    
+    ################ PARAMETERS FRAME ########################
+        
+    paramframe = ttk.Labelframe(mainframe, text='Parameters')
+    paramframe.grid(column=10,row=10, sticky=(N,S,E,W))
+    
+    #parameters = StringVar()
+    splus = ''
+    if projectDic['SSS'] == 'Shamir' :
+        splus = ' with '+projectDic['Mod']+'-bit Module'
+        
+    sparam = projectDic['Threshold']+'-out-of-'+projectDic['Nb_of_loc']+' '+projectDic['SSS']+' Secret Sharing Scheme'+splus
+    paramlabel = ttk.Label(paramframe, text=sparam)
+    paramlabel.grid(column=2, row=2, sticky=(W, E))
+    #parameters.set(sparam)
+    
+    for child in paramframe.winfo_children(): 
+        child.grid_configure(padx=5, pady=5)
     
     ################ Tool FRAME ########################
     
     toolframe = ttk.Frame(mainframe)
-    toolframe.grid(column=1,row=2, columnspan = 10, sticky=(E))
+    toolframe.grid(column=30,row=10, sticky=(E))
     
     bclose = ttk.Button(toolframe, text="Close ❌",command= lambda : com.closetab(parent,mainframe))
     bclose.grid(column=3, row=0)
     #bopen = ttk.Button(toolframe, text="",command = lambda : com.open_project(parent))
     #bopen.grid(column=1, row=0)
-    bsave = ttk.Button(toolframe, text="Save ", command = lambda : com.quick_save_project(projname))
+    bsave = ttk.Button(toolframe, text="Quick Save ", command = lambda : com.quick_save_project(projectDic))
     bsave.grid(column=2, row=0)
     
     
@@ -53,49 +76,62 @@ def create_mainframe(parent,projectDic={}):
     ################ EXPLO FRAME ########################
     
     exploframe = ttk.Labelframe(mainframe, text='Virtual Repository')
-    exploframe.grid(column=1,row=3, rowspan = 10, sticky=(N,S,E,W))
+    exploframe.grid(column=10,row=20, columnspan = 21, sticky=(N,S,E,W))
     
-    addrepo = ttk.Button(exploframe, text="Add a Directory", command= lambda : com.adddir(tree))
+    addrepo = ttk.Button(exploframe, text="Add a Directory", command= lambda : com.adddir(tree,str(mainframe),currentProjects))
     addrepo.grid(column=3, row=1,sticky=W)
     
-    addfile = ttk.Button(exploframe, text="Add a File", command=lambda : com.addfile(tree))
+    addfile = ttk.Button(exploframe, text="Add a File", command=lambda : com.addfile(tree,str(mainframe),currentProjects))
     addfile.grid(column=3, row=2,sticky=W)
     
-    reshare = ttk.Button(exploframe, text="(Re-)Share   ")
+    reshare = ttk.Button(exploframe, text="(Re-)Share   ", command=lambda : com.share(tree))
     reshare.grid(column=3, row=3,sticky=W)
     
-    recover = ttk.Button(exploframe, text="Recover   ")
+    recover = ttk.Button(exploframe, text="Recover   ", command=lambda : com.recover(tree))
     recover.grid(column=3, row=4,sticky=W)
     
-    planactions = ttk.Button(exploframe, text="Plan Actions")
+    planactions = ttk.Button(exploframe, text="Plan Actions", command=lambda : com.plan_actions(tree,currentProjects))
     planactions.grid(column=3, row=5,sticky=W)
     
-    delete = ttk.Button(exploframe, text="Delete")
+    delete = ttk.Button(exploframe, text="Delete", command=lambda : com.delete(tree))
     delete.grid(column=3, row=6,sticky=W)
     
-    tree = ttk.Treeview(exploframe, columns = ['size','status','shared on','exp date'])
+    tree = ttk.Treeview(exploframe, columns = ['size','status','shared on','exp date','path'])
     tree.grid(column=5, row=1, rowspan=6, sticky=(N, W, E, S))
     
     update = ttk.Button(exploframe, text="Reload Project File/ ",command =com.updateb)
     update.grid(column=5, row=8,sticky=(E,W))
     
-    tree.heading('#0',text = 'path')
+    tree.heading('#0',text = 'name')
     tree.column('#0',anchor = W,minwidth = 100, stretch = True, width = 200)
     tree.heading(0,text = 'size')
     tree.column(0,anchor = E, minwidth = 100, stretch = True, width = 100)
     tree.heading(1,text = 'status')
     tree.column(1,anchor = E,minwidth = 100, stretch = True, width = 100)
     tree.heading(2,text = 'shared on')
-    tree.column(2,anchor = E,minwidth = 100, stretch = True, width = 100)
+    tree.column(2,anchor = E,minwidth = 100, stretch = True, width = 150)
     tree.heading(3,text = 'expiration date')
-    tree.column(3,anchor = E,minwidth = 100, stretch = True, width = 100)
+    tree.column(3,anchor = E,minwidth = 120, stretch = True, width = 150)
+    tree.heading(4,text = 'path')
+    tree.column(4,anchor = W,minwidth = 400, stretch = True, width = 400)
     
     # Inserted at the root, program chooses id:
-    tree.insert('', 'end', 'doc', text='./example.txt')
-    tree.set('doc',0,'14KB')
-    tree.set('doc',1,'shared')
-    tree.set('doc',2,'16 Jan. 2017')
-    tree.set('doc',3,'31 Apr. 2017')
+    # currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':''}
+    d = projectDic['fileDic']
+    for fileKey in d:
+        fileName = d[fileKey]['filename']
+        fileSize = d[fileKey]['size']
+        fileStatus = d[fileKey]['status']
+        fileSharedDate = d[fileKey]['shadate']
+        fileExpdDate = d[fileKey]['expdate']
+        #filePath = d[fileKey]['values'][4]
+        
+        tree.insert('', 'end',filePath, text=fileName)
+        tree.set(fileKey,0,fileSize)
+        tree.set(fileKey,1,fileStatus)
+        tree.set(fileKey,2,fileSharedDate)
+        tree.set(fileKey,3,fileExpdDate)
+        tree.set(fileKey,4,fileKey)
     
     sc1 = ttk.Scrollbar(exploframe, orient=VERTICAL, command=tree.yview)
     tree.configure(yscrollcommand=sc1.set)
@@ -111,30 +147,12 @@ def create_mainframe(parent,projectDic={}):
         child.grid_configure(padx=5, pady=5)
         
         
-    ################ PARAMETERS FRAME ########################
-        
-    paramframe = ttk.Labelframe(mainframe, text='Parameters')
-    paramframe.grid(column=10,row=3, sticky=(N,S,E,W))
-    
-    parameters = StringVar()
-    splus = ''
-    if projectDic['SSS'] == 'Shamir' :
-        splus = ' with '+projectDic['Mod']+'-bit Module'
-        
-    sparam = projectDic['Threshold']+'-out-of-'+projectDic['Nb_of_loc']+' '+projectDic['SSS']+' Secret Sharing Scheme'+splus
-    paramlabel = ttk.Label(paramframe, text=sparam)
-    paramlabel.grid(column=2, row=2, sticky=(W, E))
-    parameters.set(sparam)
-    
-    for child in paramframe.winfo_children(): 
-        child.grid_configure(padx=5, pady=5)
-        
     ################ PLACES FRAME ########################
     emplaframe = ttk.Labelframe(mainframe, text='Storage Locations')
-    emplaframe.grid(column=10,row=5, sticky=(N,S,E,W))
+    emplaframe.grid(column=10,row=30, sticky=(N,S,E,W))
     
     emplanb = ttk.Notebook(emplaframe)
-    emplanb.grid(column=10, row=10, sticky=(N, S, E, W))
+    emplanb.grid(column=15, row=10, sticky=(N, S, E, W))
     
     def add_location(loc):
         
@@ -160,80 +178,18 @@ def create_mainframe(parent,projectDic={}):
         PMlabel = ttk.Label(newlocframe, text = loc['pm'])
         PMlabel.grid(column=10, row=50, sticky=(W, E))
         
-        checkstatus = ttk.Button(newlocframe, text="Check")
+        checkstatus = ttk.Button(newlocframe, text="Check", command = lambda : com.check(loc))
         checkstatus.grid(column=10, row=60)
      
         emplanb.add(newlocframe, text=loc['name'])
         
         for child in newlocframe.winfo_children(): 
             child.grid_configure(padx=5, pady=5)
-
-    """
-    #emplacement1 = StringVar()
-    ttk.Label(emplaframe, text='').grid(column=4, row=2, sticky=(W, E))
-    ttk.Label(emplaframe, text="Storage Location 1 :").grid(column=2, row=2, sticky=W)
-    ttk.Label(emplaframe, text=" Status :").grid(column=5, row=3, sticky=(W,E))
-    checkstatus1 = ttk.Button(emplaframe, text="Check")
-    checkstatus1.grid(column=2, row=3,sticky=(W,E))
-    #emplacement1.set(LOC[0][1])
-   
-    #emplacement2 = StringVar()
-    ttk.Label(emplaframe, text='').grid(column=4, row=5, sticky=(W, E))
-    ttk.Label(emplaframe, text="Storage Location 2 :").grid(column=2, row=5, sticky=W)
-    ttk.Label(emplaframe, text=" Status :").grid(column=5, row=6, sticky=(W,E))
-    checkstatus2 = ttk.Button(emplaframe, text="Check")
-    checkstatus2.grid(column=2, row=6,sticky=(W,E))
-    #emplacement2.set(LOC[1][1])
-   
-    #emplacement3 = StringVar()
-    emp3Lab = ttk.Label(emplaframe)
-    emp3Lab.grid(column=4, row=8, sticky=(W, E))
-    ttk.Label(emplaframe, text="Storage Location 3 :").grid(column=2, row=8, sticky=W)
-    ttk.Label(emplaframe, text=" Status :").grid(column=5, row=9, sticky=(W,E))
-    checkstatus3 = ttk.Button(emplaframe, text="Check" )
-    checkstatus3.grid(column=2, row=9,sticky=(W,E))
-    
-    if int(nbSLvar) >= 3:
-        emp3Lab['text'] = LOC[2][1]
-    else :
-        emp3Lab['text'] = 'disabled'
-        checkstatus3.configure(state='disabled')
-    
-   
-    #emplacement4 = StringVar()
-    emp4Lab = ttk.Label(emplaframe)
-    emp4Lab.grid(column=4, row=11, sticky=(W, E))
-    ttk.Label(emplaframe, text="Storage Location 4 :").grid(column=2, row=11, sticky=W)
-    ttk.Label(emplaframe, text=" Status :").grid(column=5, row=12, sticky=(W,E))
-    checkstatus4 = ttk.Button(emplaframe, text="Check")
-    checkstatus4.grid(column=2, row=12,sticky=(W,E))
-    
-    if int(nbSLvar) >= 4:
-        emp4Lab['text']=LOC[3][1]
-    else :
-        emp4Lab['text']='disabled'
-        checkstatus4.configure(state='disabled')
-    
-   
-    #emplacement5 = StringVar()
-    emp5Lab =ttk.Label(emplaframe)
-    emp5Lab.grid(column=4, row=14, sticky=(W, E))
-    ttk.Label(emplaframe, text="Storage Location 5 :").grid(column=2, row=14, sticky=W)
-    ttk.Label(emplaframe, text=" Status :").grid(column=5, row=15, sticky=(W,E))
-    checkstatus5 = ttk.Button(emplaframe, text="Check")
-    checkstatus5.grid(column=2, row=15,sticky=(W,E))
-    
-    if int(nbSLvar) == 5:
-        emp5Lab['text']=LOC[4][1]
-    else :
-        emp5Lab['text']='disabled'
-        checkstatus5.configure(state='disabled')
-    """
     
     for loc in projectDic['locDic']:
         add_location(projectDic['locDic'][loc])
    
-    checkplaces = ttk.Button(emplaframe, text="Check All",command=lambda:mainframe.update())
+    checkplaces = ttk.Button(emplaframe, text="Check All",command=lambda: com.checkall())
     checkplaces.grid(column=10, row=20)
     
     for child in emplaframe.winfo_children(): 
@@ -242,7 +198,7 @@ def create_mainframe(parent,projectDic={}):
     ################ ACTIONS FRAME ########################
 
     actionframe = ttk.Labelframe(mainframe, text='Planned Tasks')
-    actionframe.grid(column=1,row=15, sticky=(N,S,E,W))
+    actionframe.grid(column=20,row=30, sticky=(N,S,E,W))
     
     actiontree = ttk.Treeview(actionframe)
     actiontree.grid(column=5, row=3, columnspan = 2, sticky=(N, W, E, S))
@@ -256,10 +212,10 @@ def create_mainframe(parent,projectDic={}):
     actiontree.configure(yscrollcommand=sc2.set)
     sc2.grid(column = 7,row = 3, sticky = (N,S))
     
-    delactions = ttk.Button(actionframe, text="Delete Tasks")
+    delactions = ttk.Button(actionframe, text="Delete Tasks",command=lambda: com.delete_tasks())
     delactions.grid(column=5, row=10,sticky=(W,E))
     
-    launchactions = ttk.Button(actionframe, text=" Execute Tasks")
+    launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks())
     launchactions.grid(column=6, row=10,sticky=(W,E))
     
     actionframe.columnconfigure(5,weight=1)
@@ -271,7 +227,7 @@ def create_mainframe(parent,projectDic={}):
     ################ CONSOLE FRAME ########################
 
     consoleframe = ttk.Labelframe(mainframe, text='Console')
-    consoleframe.grid(column=10,row=15, sticky=(N,S,E,W))
+    consoleframe.grid(column=30,row=30, sticky=(N,S,E,W))
     
     console = Text(consoleframe, width=50, height=20)
     console.grid(column=5,row=5,sticky = (N,S,E,W))
