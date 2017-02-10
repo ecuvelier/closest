@@ -7,12 +7,13 @@ Affiliation : Université catholique de Louvain - ICTEAM - UCL Crypto Group
 Address : Place du Levant 3, 1348 Louvain-la-Neuve, BELGIUM
 email : firstname.lastname@uclouvain.be
 """
-
+from tkinter import *
 from tkinter import filedialog, messagebox
 import os
 import project_window
 import pickle
 import mainframe as mf
+import time
 
 def getname(s):
     """
@@ -72,9 +73,13 @@ def help_func(*args):
 
 ################### MAINFRAME ################################
 
-def quick_save_project(projectDic):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+def quick_save_project(projectDic,console):
+    filename = projectDic['filename']
+    f = open(filename,'wb')
+    pickle.dump(projectDic,f)
+    f.close()
+    WriteConsole(console,getname(filename)+' saved on '+time.ctime())
+    
 
 def closetab(notebook,tab):
     r = messagebox.askyesno(message='Are you sure you want to close the project?',icon='question', title='Close Project')
@@ -125,34 +130,93 @@ def addfile(tree,frameid,currentProjects):
         tree.set(s,0,size)
         tree.set(s,1,'not shared')
         tree.set(s,4,s)
-        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':''}
+        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':'','planned':False}
 
 def adddir(tree,frameid,currentProjects):
     s =  filedialog.askdirectory()
     if not s == '' and not s == ():
-        fname = getname(s)
+        fname = '/'+getname(s)
         size = convertsize(get_size(s))
         tree.insert('', 'end',s, text=fname)
         tree.set(s,0,size)
         tree.set(s,1,'not shared')
         tree.set(s,4,s)
-        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':''}
+        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':'','planned':False}
 
-def share(*args):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+def share(tree,frameid,currentProjects,console):
+    errorList = []
+    for item in tree.selection() :
+        currentStatus = currentProjects[frameid]['fileDic'][item]['status']
+        if currentStatus == 'not shared' or currentStatus == 'to share' :
+            currentProjects[frameid]['fileDic'][item]['status']= 'to share'
+            tree.set(item,1,'to share')
+        else :
+            errorList.append((currentProjects[frameid]['fileDic'][item]['filename'],currentStatus))
+            
+    for error in errorList :
+        fname,cstatus = error
+        errorMessage = 'ERROR : Status of file '+fname+' not updated to <<to share>> because its current status is :"'+cstatus+'" (only not shared file/dir could be shared)'
+        WriteConsole(console,errorMessage)
 
-def recover(*args):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
 
-def plan_actions(tree,currentProjects):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+def recover(tree,frameid,currentProjects,console):
+    errorList = []
+    for item in tree.selection() :
+        currentStatus = currentProjects[frameid]['fileDic'][item]['status']
+        if currentStatus == 'shared' or currentStatus == 'to recover' :
+            currentProjects[frameid]['fileDic'][item]['status']= 'to recover'
+            tree.set(item,1,'to recover')
+        else :
+            errorList.append((currentProjects[frameid]['fileDic'][item]['filename'],currentStatus))
+            
+    for error in errorList :
+        fname,cstatus = error
+        errorMessage = 'ERROR : Status of '+fname+' not updated to "to recover" because its current status is :"'+cstatus+'" (only shared file/dir could be recovered)'
+        WriteConsole(console,errorMessage)
+        
+def restore(tree,frameid,currentProjects,console):
+    for item in tree.selection() :
+        currentStatus = currentProjects[frameid]['fileDic'][item]['status']
+        if currentStatus == 'to share' :
+            currentProjects[frameid]['fileDic'][item]['status']= 'not shared'
+            tree.set(item,1,'not shared')
+        elif currentStatus == 'to delete' or currentStatus == 'to recover' :
+            currentProjects[frameid]['fileDic'][item]['status']= 'shared'
+            tree.set(item,1,'shared')
+        else :
+            pass
+        
+def plan_actions(actiontree,frameid,currentProjects):
+    d = currentProjects[frameid]['fileDic']
+    for item in d:
+        itemStatus = d[item]['status']
+        itemPlanned = d[item]['planned']
+        if not itemPlanned :
+            if itemStatus == 'to share' :
+                actiontree.insert('', 'end',item, text='share '+d[item]['filename'])
+            elif itemStatus == 'to recover' :
+                actiontree.insert('', 'end',item, text='recover '+d[item]['filename'])
+            elif itemStatus == 'to remove' :
+                actiontree.insert('', 'end',item, text='remove '+d[item]['filename'])
+            d[item]['planned'] = True
+            
+    
 
-def delete(*args):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+def remove(tree,actiontree,frameid,currentProjects,console):
+    for item in tree.selection() :
+        currentStatus = currentProjects[frameid]['fileDic'][item]['status']
+        if currentStatus == 'shared' or currentStatus == 'to recover' or currentStatus == 'to remove':
+            currentProjects[frameid]['fileDic'][item]['status']= 'to remove'
+            tree.set(item,1,'to remove')
+        else :
+            fname = currentProjects[frameid]['fileDic'][item]['filename']
+            if not actiontree.exists(item):
+                currentProjects[frameid]['fileDic'].pop(item)
+                tree.delete(item)
+                WriteConsole(console,fname+' removed')
+            else :
+                WriteConsole(console,fname+' not removed (cancel action first)')
+        
 
 def updateb(*args):
     messagebox.showinfo(message='Not Implemented Yet')
@@ -170,13 +234,24 @@ def checkall(*args):
 
 ######### TASKS FRAME ############
 
-def delete_tasks(*args):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+def cancel_tasks(actiontree,frameid,currentProjects,console):
+    for item in actiontree.selection() :
+        fname = currentProjects[frameid]['fileDic'][item]['filename']
+        currentProjects[frameid]['fileDic'][item]['planned'] = False
+        actiontree.delete(item)
+        WriteConsole(console,'Action on '+fname+' canceled')
+
 
 def execute_tasks(*args):
     messagebox.showinfo(message='Not Implemented Yet')
     pass
+
+######### CONSOLE FRAME ###########
+
+def WriteConsole(console,message):
+    console.config(state=NORMAL)
+    console.insert('end','\n>>> '+message)
+    console.config(state=DISABLED)
 
         
 ################## PROJECT WINDOW ####################################

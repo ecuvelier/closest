@@ -36,6 +36,8 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     
     mainframe.rowconfigure(20,weight=3)
     mainframe.columnconfigure(10,weight=3)
+    mainframe.columnconfigure(20,weight=3)
+    mainframe.columnconfigure(30,weight=3)
     
     mainframe.rowconfigure(30,weight=3)
     
@@ -66,11 +68,34 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     bclose.grid(column=3, row=0)
     #bopen = ttk.Button(toolframe, text="",command = lambda : com.open_project(parent))
     #bopen.grid(column=1, row=0)
-    bsave = ttk.Button(toolframe, text="Quick Save ", command = lambda : com.quick_save_project(projectDic))
+    bsave = ttk.Button(toolframe, text="Quick Save ", command = lambda : com.quick_save_project(projectDic,console))
     bsave.grid(column=2, row=0)
     
     
     for child in toolframe.winfo_children(): 
+        child.grid_configure(padx=5, pady=5)
+        
+    ################ CONSOLE FRAME ########################
+
+    consoleframe = ttk.Labelframe(mainframe, text='Console')
+    consoleframe.grid(column=30,row=30, sticky=(N,S,E,W))
+    
+    console = Text(consoleframe, width=50, height=20)
+    console.grid(column=5,row=5,sticky = (N,S,E,W))
+    #console.config(state=DISABLED)
+    
+    sc3 = ttk.Scrollbar(consoleframe, orient=VERTICAL, command=console.yview)
+    console.configure(yscrollcommand=sc3.set)
+    sc3.grid(column = 6,row = 5, sticky = (N,S))
+    
+    consoleframe.columnconfigure(5,weight=1)
+    consoleframe.rowconfigure(5,weight=1)
+    
+    console.insert('1.0','>>> Welcome to Closest')
+    console.config(state=DISABLED)
+    
+    
+    for child in consoleframe.winfo_children(): 
         child.grid_configure(padx=5, pady=5)
     
     ################ EXPLO FRAME ########################
@@ -78,29 +103,32 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     exploframe = ttk.Labelframe(mainframe, text='Virtual Repository')
     exploframe.grid(column=10,row=20, columnspan = 21, sticky=(N,S,E,W))
     
-    addrepo = ttk.Button(exploframe, text="Add a Directory", command= lambda : com.adddir(tree,str(mainframe),currentProjects))
+    addrepo = ttk.Button(exploframe, text="Add a Directory ", command= lambda : com.adddir(tree,str(mainframe),currentProjects))
     addrepo.grid(column=3, row=1,sticky=W)
     
-    addfile = ttk.Button(exploframe, text="Add a File", command=lambda : com.addfile(tree,str(mainframe),currentProjects))
+    addfile = ttk.Button(exploframe, text="Add a File ", command=lambda : com.addfile(tree,str(mainframe),currentProjects))
     addfile.grid(column=3, row=2,sticky=W)
     
-    reshare = ttk.Button(exploframe, text="(Re-)Share   ", command=lambda : com.share(tree))
+    reshare = ttk.Button(exploframe, text="(Re-)Share   ", command=lambda : com.share(tree,str(mainframe),currentProjects,console))
     reshare.grid(column=3, row=3,sticky=W)
     
-    recover = ttk.Button(exploframe, text="Recover   ", command=lambda : com.recover(tree))
+    recover = ttk.Button(exploframe, text="Recover   ", command=lambda : com.recover(tree,str(mainframe),currentProjects,console))
     recover.grid(column=3, row=4,sticky=W)
     
-    planactions = ttk.Button(exploframe, text="Plan Actions", command=lambda : com.plan_actions(tree,currentProjects))
-    planactions.grid(column=3, row=5,sticky=W)
+    restore = ttk.Button(exploframe, text="Restore ", command=lambda : com.restore(tree,str(mainframe),currentProjects,console))
+    restore.grid(column=3, row=5,sticky=W)
     
-    delete = ttk.Button(exploframe, text="Delete", command=lambda : com.delete(tree))
-    delete.grid(column=3, row=6,sticky=W)
+    planactions = ttk.Button(exploframe, text="Plan Actions ", command=lambda : com.plan_actions(actiontree,str(mainframe),currentProjects))
+    planactions.grid(column=5, row=8,sticky=(E,W))
+    
+    remove = ttk.Button(exploframe, text="Remove ", command=lambda : com.remove(tree,actiontree,str(mainframe),currentProjects,console))
+    remove.grid(column=3, row=6,sticky=W)
     
     tree = ttk.Treeview(exploframe, columns = ['size','status','shared on','exp date','path'])
     tree.grid(column=5, row=1, rowspan=6, sticky=(N, W, E, S))
     
-    update = ttk.Button(exploframe, text="Reload Project File/ ",command =com.updateb)
-    update.grid(column=5, row=8,sticky=(E,W))
+    #update = ttk.Button(exploframe, text="Reload Project File/ ",command =com.updateb)
+    #update.grid(column=5, row=8,sticky=(E,W))
     
     tree.heading('#0',text = 'name')
     tree.column('#0',anchor = W,minwidth = 100, stretch = True, width = 200)
@@ -116,7 +144,6 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     tree.column(4,anchor = W,minwidth = 400, stretch = True, width = 400)
     
     # Inserted at the root, program chooses id:
-    # currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':''}
     d = projectDic['fileDic']
     for fileKey in d:
         fileName = d[fileKey]['filename']
@@ -124,9 +151,8 @@ def create_mainframe(parent,currentProjects,projectDic={}):
         fileStatus = d[fileKey]['status']
         fileSharedDate = d[fileKey]['shadate']
         fileExpdDate = d[fileKey]['expdate']
-        #filePath = d[fileKey]['values'][4]
         
-        tree.insert('', 'end',filePath, text=fileName)
+        tree.insert('', 'end',fileKey, text=fileName)
         tree.set(fileKey,0,fileSize)
         tree.set(fileKey,1,fileStatus)
         tree.set(fileKey,2,fileSharedDate)
@@ -204,15 +230,23 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     actiontree.grid(column=5, row=3, columnspan = 2, sticky=(N, W, E, S))
     
     actiontree.heading('#0',text = 'Actions pending')
-
-    actiontree.insert('', 0, 'gallery', text='Share example.txt')
-
+    
+    d = projectDic['fileDic']
+    for item in d:
+        if d[item]['planned'] :
+            itemStatus = d[item]['status']
+            if itemStatus == 'to share' :
+                actiontree.insert('', 'end',item, text='share '+d[item]['filename'])
+            elif itemStatus == 'to recover' :
+                actiontree.insert('', 'end',item, text='recover '+d[item]['filename'])
+            elif itemStatus == 'to remove' :
+                actiontree.insert('', 'end',item, text='remove '+d[item]['filename'])
     
     sc2 = ttk.Scrollbar(actionframe, orient=VERTICAL, command=actiontree.yview)
     actiontree.configure(yscrollcommand=sc2.set)
     sc2.grid(column = 7,row = 3, sticky = (N,S))
     
-    delactions = ttk.Button(actionframe, text="Delete Tasks",command=lambda: com.delete_tasks())
+    delactions = ttk.Button(actionframe, text="Cancel Tasks",command=lambda: com.cancel_tasks(actiontree,str(mainframe),currentProjects,console))
     delactions.grid(column=5, row=10,sticky=(W,E))
     
     launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks())
@@ -224,25 +258,6 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     for child in actionframe.winfo_children(): 
         child.grid_configure(padx=5, pady=5)
         
-    ################ CONSOLE FRAME ########################
-
-    consoleframe = ttk.Labelframe(mainframe, text='Console')
-    consoleframe.grid(column=30,row=30, sticky=(N,S,E,W))
-    
-    console = Text(consoleframe, width=50, height=20)
-    console.grid(column=5,row=5,sticky = (N,S,E,W))
-    console.config(state=DISABLED)
-    
-    sc3 = ttk.Scrollbar(consoleframe, orient=VERTICAL, command=console.yview)
-    console.configure(yscrollcommand=sc3.set)
-    sc3.grid(column = 6,row = 5, sticky = (N,S))
-    
-    consoleframe.columnconfigure(5,weight=1)
-    consoleframe.rowconfigure(5,weight=1)
-    
-    
-    for child in consoleframe.winfo_children(): 
-        child.grid_configure(padx=5, pady=5)
         
     #######################################################
         

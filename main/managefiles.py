@@ -101,7 +101,7 @@ class Mysharedfile:
         try :
             f = open(self.filename,'r')
         except :
-            print 'Error : trying to open a non exisiting file named : %r \n try to create it first' % self.filename
+            print('Error : trying to open a non exisiting file named :'+self.filename+' \n try to create it first')
         else :
             s = f.read()
             f.close()
