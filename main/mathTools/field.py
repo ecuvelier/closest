@@ -9,13 +9,24 @@ email : firstname.lastname@uclouvain.be
 """
 
 from numpy import *
-import gmpy
-from Crypto.Random.random import randint
-#import random as rd
+import gmpy2 as gmpy
+#from Crypto.Random.random import randint
+from binascii import hexlify
+import os
 import tools.fingexp as fingexp
 import tools.utils as utils
 
 #TODO : clean this module to keep only needed elements
+
+def myrandom(a,b):
+    """
+    return a random number between a and b
+    """
+    c = b-a
+    l = ceil(len(bin(c))-2/8)
+    r = int(hexlify(os.urandom(max(l,128))),16)%(c+1)
+    assert a+r<=b
+    return a+r
 
 
 class Field(fingexp.FingExp):

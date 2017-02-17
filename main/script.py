@@ -52,7 +52,7 @@ print('Sharing scheme created...')
 
 
 
-f = open('test.png.tar.gz','r')
+f = open('test.png.tar.gz','rb')
 s = f.read()
 f.close()
 

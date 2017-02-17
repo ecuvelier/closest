@@ -48,9 +48,9 @@ class SecretSharingScheme:
     def reshare(self,shareslist):
         raise NotImplementedError('subclasses must override reshare()!')
         
-    def encode(self,s):
+    def encode(self,s,typ):
         """
-        encode binary string s into the right format for further sharing
+        encode string s into the right format for further sharing
         """
         raise NotImplementedError('subclasses must override encode()!')
         
@@ -185,7 +185,7 @@ class ShamirSecretSharing(SecretSharingScheme):
         k = len(shareslist)
         assert k > self.t # Not enough shares to reconstruct the message!
         if k < n :
-            print 'Warning : shares missing!\n You might want to rebuild the sharing by trigering retrieve(sharelist)->m then share(m).' #TODO: triggering mechanism? 
+            print('Warning : shares missing!\n You might want to rebuild the sharing by trigering retrieve(sharelist)->m then share(m).') #TODO: triggering mechanism? 
         
         shareslistofzero = self.share(self.F.zero())
         newshareslist = []
@@ -198,22 +198,34 @@ class ShamirSecretSharing(SecretSharingScheme):
         
         return newshareslist
         
-    def encode(self,s):
+    def encode(self,s,typ):
         """
         encode binary string s into the right format for further sharing
+        typ must be 'bin' or 'hex' depending of the format of the string 
+        (binary or hexadecimal)
         """
+        assert typ == 'bin' or typ == 'hex'        
+        
         F = self.F
         
         k = len(s)
         messageslist = []
-        lp = len(bin(self.p))-3 # bit length of p minus 1
+        plp = len(bin(self.p-1))-2
+        if typ == 'bin' :
+            lp = plp-1 # bit length of p minus 1
+        else :
+            lp = int(plp/16)
+        
         index = 0
         
         while index < k :
             ms = s[index:index+lp]
             while len(ms)< lp:
                 ms = ms+'0'
-            m = F.elem(int(ms,2))
+            if typ == 'bin' :
+                m = F.elem(int(ms,2))
+            else :
+                m = F.elem(int(ms,16))
             messageslist.append(m)
             index += lp
             

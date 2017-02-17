@@ -4,7 +4,7 @@
 """
 
 from base64 import b64encode
-from gmpy import mpz
+from gmpy2 import mpz
 from re import sub
 # from gmpy2 import mpz, bit_length, f_divmod_2exp
 
@@ -37,7 +37,7 @@ def mpztob64(mpzval):
     # build resulting base64 string
     b64string = ""
     #print "octal: ", octal
-    for i in xrange(0, len(octal), 2):
+    for i in range(0, len(octal), 2):
         b64string += ALPHABET[int(octal[i:i+2], 8)]
     return b64string
 

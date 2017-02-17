@@ -11,6 +11,8 @@ email : firstname.lastname@uclouvain.be
 import pickle
 import secretsharing as sss
 import time
+from hashlib import sha256
+from binascii import hexlify
 import os
 
 
@@ -26,12 +28,40 @@ def uploadfile(f,loc):
 def downloadfile(fname,loc):
     """
     Download the file with the file name fname from the location loc
-    """
+    """    
     
+def toBytes(s):
+    """
+    remove the characters folowing the last 'ffffffff' substring of s then  
+    turn the hex string s into a bytes type
+    """
+    endp = s.rfind('ffffffff')
+    c = s[:endp]
+    return bytes.fromhex(c)
+    
+def toHex(b):
+    """
+    turn the bytes object b into a hex string and concatenate with 'ffffffff'
+    """
+    return b.hex()+'ffffffff'
+   
+"""
+def toString(b):
+    '''
+    remove the last bytes of b that follows and include the byte '11111111' then turn 
+    the remaining b into a string
+    '''
+    endp = b.rfind(b'1111111')
+    c = b[:endp]
+    return c.decode('ascii')
+"""
+
 def toBin(s):
     """
+    #DEPRECATED in Python 3
     turn the character string s into a binary string
     """
+    
     b = ''
     for x in s :
         bx = format(ord(x), 'b').zfill(8)
@@ -43,9 +73,10 @@ def toBin(s):
     #    b += '0'
         
     return b
-    
+
 def toChar(b):
     """
+    #DEPRECATED in Python 3
     remove the last bits of b that follows and include the byte '11111111' then turn 
     the remaining b into a character chain by converting bytes to characters
     """
@@ -55,7 +86,8 @@ def toChar(b):
     index = 0
     assert len(b) % 8 == 0
     k = len(b)/8
-    for i in range(k):
+    print(k)
+    for i in range(int(k)):
         bs = b[index:index+8]
         x = chr(int(bs,2))
         index += 8
@@ -69,6 +101,12 @@ def loadPointer(filename):
     assert type(mysharedfile) is Mysharedfile # the pointer is not a Mysharedfile object
     mysharedfile.loadSecretSharingSchemefromfile()
     
+    
+def hashname(string):
+    """
+    Return a SHA-256 of string in hexa decimal representation
+    """
+    return hexlify(sha256(bytes(string,'ascii')).digest())
 
     
 class Mysharedfile:
@@ -161,6 +199,8 @@ class Mysharedfile:
             os.mkdir(directoryname)
         except :
             pass #the directory already exists
+            
+        salt = hexlify(os.urandom(8))
         for j in range(n) :
             sdir[j] = directoryname+'/shares_of_party_'+str(j)+'/'
             os.mkdir(sdir[j])
@@ -169,7 +209,9 @@ class Mysharedfile:
             shares_of_message = self.listofsharesofmessages[k]
             for j in range(len(shares_of_message)) :
                 share = shares_of_message[j]
-                s = sdir[j]+self.filename+'_share_of_msg_'+str(k)+'.share' #TODO: maybe filename should not appear, use (salted) hash somehow?
+                spre = salt+sdir[j]+self.filename+'_share_of_msg_'+str(k)
+                st = hashname(spre)
+                s = st+'.share'
                 f = open(s,'w')
                 #pickle.dump(share,f)
                 binshare = SSS.shareToBin(share)
@@ -178,7 +220,7 @@ class Mysharedfile:
                 sItem.append(s)
             sList.append(sItem)
                 
-        return sList
+        return sList,salt
         
     def rebuilt_listofsharesmessages(self,sList):
         SSS = self.SSS

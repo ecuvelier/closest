@@ -3,12 +3,12 @@
 """
 
 import json
-from gmpy import mpz
-# from gmpy2 import mpz, bit_length, f_divmod_2exp
+#from gmpy import mpz
+from gmpy2 import mpz, bit_length, f_divmod_2exp
 from base64 import b64encode
 from hashlib import sha256 as crypthash
 
-import utils
+from tools import utils
 
 def fingerprint(blob):
     """Compute the fingerprint of its input.
@@ -21,16 +21,16 @@ def fingerprint(blob):
     except (TypeError, ValueError):
         pass
     else:
-        string = utils.mpztob64(mpz_value)
+        string = bytes(utils.mpztob64(mpz_value),'ascii')
         return b64encode(crypthash(string).digest())
 
     # is it a string?
     if isinstance(blob, str):
-        return b64encode(crypthash(blob).digest())
+        return b64encode(crypthash(bytes(blob,'ascii')).digest())
     # is it a list?
     if isinstance(blob, (list, tuple)):
         list_of_fingerprints = [fingerprint(i) for i in blob]
-        string = json.dumps(list_of_fingerprints, separators=(',',':'))
+        string = bytes(json.dumps(list_of_fingerprints, separators=(',',':')),'ascii')
         return b64encode(crypthash(string).digest())
     # is it a dict?
     if isinstance(blob, dict):
@@ -41,7 +41,7 @@ def fingerprint(blob):
         keys = sorted(blob)
         list_of_fingerprints = [fingerprint([k, blob[k]]) \
                                     for k in keys]
-        string = json.dumps(list_of_fingerprints, separators=(',',':'))
+        string = bytes(json.dumps(list_of_fingerprints, separators=(',',':')),'ascii')
         return b64encode(crypthash(string).digest())
     # is it None
     if blob is None:
@@ -94,7 +94,7 @@ def exportable(blob, f_dict = None):
         for k in blob.keys():
             dict_to_export[k], f_dict = exportable(blob[k], f_dict)
         return dict_to_export, f_dict
-    print "I cannot parse this:", blob
+    print("I cannot parse this: "+ str(blob))
     assert False, "exportable cannot parse object"
 
 class FingExp(object):
@@ -135,7 +135,7 @@ class FingExp(object):
 		    fingerprint([key, getattr(self, key)])
             # Building final string
             list_to_hash.append(self.attr_fingerprint[key])
-        string = json.dumps(list_to_hash, separators=(',',':'))
+        string = bytes(json.dumps(list_to_hash, separators=(',',':')),'ascii')
         result = b64encode(crypthash(string).digest())
         self.attr_fingerprint["#"] = result
         return result
