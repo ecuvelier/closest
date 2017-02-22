@@ -78,6 +78,10 @@ print( b == sb)
 #sL = sharedfile.saveShares()
 #spointer = sharedfile.save('./pointers')
 #newsharedfile = mf.loadPointer(spointer)
+#newsharedfile.loadSecretSharingSchemefromfile()
+#sL = newsharedfile.recover_List_of_Filename_of_Shares()
+
+
 #sharedfile.filename = 'rebuildedfile.png.tar.gz'
 #sharedfile.rebuildfile()
     

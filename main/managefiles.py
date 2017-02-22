@@ -337,14 +337,26 @@ class Mysharedfile:
             sList.append(sItem)
         return sList
         
-    def rebuilt_listofsharesmessages(self,sList,directoryname='.'):
+    def rebuilt_listofsharesmessages(self,sList,directorynames=[]):
         SSS = self.SSS
+        n = SSS.n
+        sdir = [0]*n
+        if directorynames != [] :
+            n = len(directorynames)
+            for j in range(n):
+                sdir[j] = directorynames[j]
+        else :
+            # directorynames == []
+            for j in range(n) :
+                sdir[j] = './shares/shares_of_party_'+str(j)+'/'
+                
         LOSM = []
         for sItem in sList:
             LOSMitem = []
-            for s in sItem :
+            for j in range(n) :
+                s = sdir[j]+sItem[j]
                 f = open(s,'rb')
-                byteshare = pickle.load(f)
+                byteshare = f.read()
                 #binsharel1 = f.readline()
                 #binsharel2 = f.readline()
                 f.close()
