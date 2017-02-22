@@ -61,15 +61,15 @@ class SecretSharingScheme:
         """
         raise NotImplementedError('subclasses must override decode()!')
         
-    def shareToBin(self,share):
+    def shareToBytes(self,share):
         """
-        Turn a share into a binary string
+        Turn a share into a bytes array
         """
         raise NotImplementedError('subclasses must override shareToBin()!')
         
-    def binToShare(self,binshare1,binshare2):
+    def bytesToShare(self,byteshare):
         """
-        Turn two binary strings into a share 
+        Turn a bytes array into a share 
         """
         raise NotImplementedError('subclasses must override binToShare()!')
         
@@ -288,15 +288,26 @@ class ShamirSecretSharing(SecretSharingScheme):
         return s
         """
         
-    def shareToBin(self, share):
+    def shareToBytes(self, share):
+        plp = len(bin(self.p))-2
+        blockSize = int(plp/8)
         ai,si = share
-        return bin(ai.val)+'\n'+bin(si.val)
+        #assert ai.val < self.p-1
+        #print(si.val < 256**(blockSize+1))
+        #print(blockSize)
+        #print(ai.val,si.val)
         
-    def binToShare(self, bs1,bs2 ):
-        sbs1 = int(bs1,2)
-        sbs2 = int(bs2,2)
-        ai = self.F.elem(sbs1)
-        si = self.F.elem(sbs2)
+        return mf.fromInttoBytes((ai.val,si.val),blockSize)
+        #return bin(ai.val)+'\n'+bin(si.val)
+        
+    def bytesToShare(self, byteshare ):
+        #sbs1 = int(bs1,2)
+        #sbs2 = int(bs2,2)
+        plp = len(bin(self.p))-2
+        blockSize = int(plp/8)
+        sai,ssi = mf.fromBytestoInt(byteshare,blockSize)
+        ai = self.F.elem(sai)
+        si = self.F.elem(ssi)
         return ai,si
         
     def __str__(self):

@@ -72,10 +72,12 @@ sb = mf.removeEndBytes(bx)
 print( b == sb)
 """
 
-sharedfile = mf.Mysharedfile('testbis.png.tar.gz', SSS = None, filenameofSSS = './SSS/SSS512')
-sharedfile.loadSecretSharingSchemefromfile()
-sharedfile.sharefile()
-#sharedfile.save()
+#sharedfile = mf.Mysharedfile('testbis.png.tar.gz', SSS = None, filenameofSSS = './SSS/SSS512')
+#sharedfile.loadSecretSharingSchemefromfile()
+#sharedfile.sharefile()
+#sL = sharedfile.saveShares()
+#spointer = sharedfile.save('./pointers')
+#newsharedfile = mf.loadPointer(spointer)
 #sharedfile.filename = 'rebuildedfile.png.tar.gz'
 #sharedfile.rebuildfile()
     

@@ -153,23 +153,25 @@ def toChar(b):
 """
     
 def loadPointer(filename):
-    f = open(filename,'r')
+    f = open(filename,'rb')
     mysharedfile = pickle.load(f)
     f.close()
     assert type(mysharedfile) is Mysharedfile # the pointer is not a Mysharedfile object
-    mysharedfile.loadSecretSharingSchemefromfile()
+    #mysharedfile.loadSecretSharingSchemefromfile()
+    
+    return mysharedfile
     
     
 def hashname(string):
     """
     Return a SHA-256 of string in hexa decimal representation
     """
-    return hexlify(sha256(bytes(string,'ascii')).digest())
+    return str(hexlify(sha256(bytes(string,'ascii')).digest()))
 
     
 class Mysharedfile:
     
-    def __init__(self,filename, SSS = None, filenameofSSS = '',listofsharesofmessages = [],listoflocations = [],epoch = 2678400 ):
+    def __init__(self,filename, SSS = None, filenameofSSS = '',listofsharesofmessages = [], numberofmessages = 0, salt = 0 ,listoflocations = [],epoch = 2678400 ):
         """
         Construct a mysharedfile object given
         - filename, the name of the file
@@ -189,9 +191,14 @@ class Mysharedfile:
         self.SSS = SSS
         self.filenameofSSS = filenameofSSS
         self.listofsharesofmessages = listofsharesofmessages
+        self.numberofmessages = numberofmessages
         self.timestamp = time.time()
         self.epoch = epoch
-        
+        if salt == 0 :
+            self.salt = hexlify(os.urandom(8))
+        else : 
+            assert type(salt) == bytes and len(salt) == 16 # Incorrect salt format 
+            self.salt = salt
     
     def sharefile(self):
         try :
@@ -205,6 +212,7 @@ class Mysharedfile:
             Mlist = self.SSS.encode(bs)
             SLM = self.SSS.sharelist(Mlist)
             self.listofsharesofmessages = SLM
+            self.numberofmessages = len(SLM)
         
         
     def rebuildfile(self):
@@ -226,7 +234,7 @@ class Mysharedfile:
         SSS = pickle.load(f)
         self.SSS = SSS
         
-    def save(self):
+    def save(self,directoryname = '.'):
         """
         this wraps the myfile object into a file named 'pointerto'+self.filename
         to avoid saving multiple times unnecesary object, we explicitly do not
@@ -234,13 +242,20 @@ class Mysharedfile:
         """
         assert self.filename != '' # Cannot save a pointer to a blank name
         assert self.filenameofSSS != '' # The pointer must contain the filename of a Secret Sharing Scheme SSS
-        pointertomysharedfile = Mysharedfile(self.filename, None, self.filenameofSSS, [], self.epoch)
-        s = 'pointerto'+self.filename+'.pointer'
+        if not directoryname == '.':
+            try :
+                os.mkdir(directoryname)
+            except :
+                pass #the directory already exists
+        pointertomysharedfile = Mysharedfile(self.filename, None, self.filenameofSSS, [],self.numberofmessages, self.salt, self.epoch)
+        s = directoryname+'/pointerto'+self.filename+'.pointer'
         f = open(s,'wb')
         pickle.dump(pointertomysharedfile,f)
         f.close()
         
-    def saveShares(self,directoryname, numberofshares = 0):
+        return s
+        
+    def saveShares(self,directorynames = [], numberofparties = 0):
         """
         This saves the shares into files (using pickles) that are stored into
         ./directory/sharej where j range from 0 to numberofshares
@@ -248,50 +263,92 @@ class Mysharedfile:
         """
         SSS = self.SSS
         sList = []
-        if numberofshares == 0 :
+        if numberofparties == 0 :
             n = SSS.n
         else :
-            n = numberofshares
-        sdir = [0]*n
-        try :
-            os.mkdir(directoryname)
-        except :
-            pass #the directory already exists
+            n = numberofparties
             
-        salt = hexlify(os.urandom(8))
-        for j in range(n) :
-            sdir[j] = directoryname+'/shares_of_party_'+str(j)+'/'
-            os.mkdir(sdir[j])
+        sdir = [0]*n
+        if directorynames != [] :
+            assert len(directorynames) ==  n
+            for j in range(n):
+                dnj = directorynames[j]
+                try :
+                    os.mkdir(dnj)
+                except :
+                    pass #the directory already exists
+                sdir = dnj
+        else :
+            # directorynames == []
+            try :
+                os.mkdir('./shares')
+            except :
+                pass #the directory already exists
+            for j in range(n) :
+                sdir[j] = './shares/shares_of_party_'+str(j)+'/'
+                try :
+                    os.mkdir(sdir[j])
+                except :
+                    pass #the directory already exists
+                    
         for k in range(len(self.listofsharesofmessages)) :
             sItem = []
             shares_of_message = self.listofsharesofmessages[k]
             for j in range(len(shares_of_message)) :
                 share = shares_of_message[j]
-                spre = salt+sdir[j]+self.filename+'_share_of_msg_'+str(k)
+                spre = str(self.salt)+self.filename+'_share_of_msg_'+str(k)+'_for_party_'+str(j)
                 st = hashname(spre)
-                s = st+'.share'
-                f = open(s,'w')
+                s = sdir[j]+st+'.share'
+                f = open(s,'wb')
                 #pickle.dump(share,f)
-                binshare = SSS.shareToBin(share)
-                f.write(binshare)
+                byteshare = SSS.shareToBytes(share)
+                f.write(byteshare)
                 f.close()
-                sItem.append(s)
+                sItem.append(st+'.share')
             sList.append(sItem)
                 
-        return sList,salt
+        return sList
         
-    def rebuilt_listofsharesmessages(self,sList):
+    def recover_List_of_Filename_of_Shares(self,salt = 0,numberofparties = 0, numberofmessages = 0):
+        sList = []
+        if numberofparties == 0 :
+            n = self.SSS.n
+        else :
+            n = numberofparties
+        if numberofmessages == 0 :
+            nom = self.numberofmessages
+        else :
+            nom = numberofmessages
+        if salt == 0 :
+            slt = self.salt
+        else :
+            slt = salt
+            
+        #sdir = [0]*n
+        #for j in range(n) :
+        #    sdir[j] = directoryname+'/shares_of_party_'+str(j)+'/'
+        for k in range(nom) :
+            sItem = []
+            for j in range(n) :
+                spre = str(slt)+self.filename+'_share_of_msg_'+str(k)+'_for_party_'+str(j)
+                st = hashname(spre)
+                s = st+'.share'
+                sItem.append(s)
+            sList.append(sItem)
+        return sList
+        
+    def rebuilt_listofsharesmessages(self,sList,directoryname='.'):
         SSS = self.SSS
         LOSM = []
         for sItem in sList:
             LOSMitem = []
             for s in sItem :
-                f = open(s,'r')
-                #share = pickle.load(f)
-                binsharel1 = f.readline()
-                binsharel2 = f.readline()
+                f = open(s,'rb')
+                byteshare = pickle.load(f)
+                #binsharel1 = f.readline()
+                #binsharel2 = f.readline()
                 f.close()
-                share = SSS.binToShare(binsharel1,binsharel2)
+                share = SSS.bytesToShare(byteshare)
                 LOSMitem.append(share)
             LOSM.append(LOSMitem)
         self.listofsharesofmessages = LOSM
