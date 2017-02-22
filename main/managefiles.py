@@ -29,23 +29,25 @@ def downloadfile(fname,loc):
     """
     Download the file with the file name fname from the location loc
     """    
-    
+
+
+"""
+#DEPRECATED
 def toBytes(s):
-    """
+    '''
     remove the characters folowing the last 'ffffffff' substring of s then  
     turn the hex string s into a bytes type
-    """
+    '''
     endp = s.rfind('ffffffff')
     c = s[:endp]
     return bytes.fromhex(c)
     
 def toHex(b):
-    """
+    '''
     turn the bytes object b into a hex string and concatenate with 'ffffffff'
-    """
+    '''
     return b.hex()+'ffffffff'
-   
-"""
+
 def toString(b):
     '''
     remove the last bytes of b that follows and include the byte '11111111' then turn 
@@ -56,11 +58,67 @@ def toString(b):
     return c.decode('ascii')
 """
 
+def appendEndBytes(b):
+    '''
+    Append the bytes b'\xff\xff\xff\xff\xff\xff\xff\xff' and return
+    '''
+    return b+b'\xff\xff\xff\xff\xff\xff\xff\xff'
+    
+def removeEndBytes(b):
+    '''
+    remove the bytes folowing the last b'\xff\xff\xff\xff\xff\xff\xff\xff' bytes of b and return
+    '''
+    endp = b.rfind(b'\xff\xff\xff\xff\xff\xff\xff\xff')
+    return b[:endp]
+
+
+def fromBytestoInt(b,k):
+    """
+    Convert a bytes array to a tuple of int ranging from 0 to 256**(k-1)
+    """
+    assert len(b)% k == 0
+    i = 0
+    ck = 0
+    T = ()
+    while i < len(b):
+        nb = 0
+        while ck < k :
+            nb = nb + b[i]*(256**ck)
+            i+=1
+            ck+=1
+        ck = 0
+        T = T+(nb,)
+    return T
+    
+def fromInttoBytes(T,k):
+    """
+    Convert a tuple of int ranging from 0 to 256**(k-1) to a bytes array 
+    """
+    b = []
+    rT = [0]*k
+    for j in range(k-1,-1,-1):
+        rT[j] = 256**j
+    for i in range(len(T)):
+        nb = T[i]
+        cb = []
+        for j in range(k-1,-1,-1):
+            r = rT[j]
+            if nb >= r:
+                hj = int((nb-nb%r)/r)
+                cb.append(hj)
+            else :
+                cb.append(0)
+            nb = nb%r
+        cb.reverse()
+        b =  b +cb
+    return bytes(b)
+        
+"""
+#DEPRECATED in Python 3
 def toBin(s):
-    """
-    #DEPRECATED in Python 3
+    '''
     turn the character string s into a binary string
-    """
+    '''
     
     b = ''
     for x in s :
@@ -75,11 +133,10 @@ def toBin(s):
     return b
 
 def toChar(b):
-    """
-    #DEPRECATED in Python 3
+    '''
     remove the last bits of b that follows and include the byte '11111111' then turn 
     the remaining b into a character chain by converting bytes to characters
-    """
+    '''
     endp = b.rfind('11111111')
     b = b[:endp]
     s = ''
@@ -93,6 +150,7 @@ def toChar(b):
         index += 8
         s += x
     return s
+"""
     
 def loadPointer(filename):
     f = open(filename,'r')
@@ -137,13 +195,13 @@ class Mysharedfile:
     
     def sharefile(self):
         try :
-            f = open(self.filename,'r')
+            f = open(self.filename,'rb')
         except :
             print('Error : trying to open a non exisiting file named :'+self.filename+' \n try to create it first')
         else :
-            s = f.read()
+            b = f.read()
             f.close()
-            bs = toBin(s)
+            bs = appendEndBytes(b)
             Mlist = self.SSS.encode(bs)
             SLM = self.SSS.sharelist(Mlist)
             self.listofsharesofmessages = SLM
@@ -157,14 +215,14 @@ class Mysharedfile:
         
         ML = self.SSS.retrievelist(self.listofsharesofmessages)
         bx = self.SSS.decode(ML)
-        sb = toChar(bx)
+        sb = removeEndBytes(bx)
         
-        f = open(self.filename,'w')
+        f = open(self.filename,'wb')
         f.write(sb)
         f.close()
     
     def loadSecretSharingSchemefromfile(self):
-        f = open(self.filenameofSSS,'r')
+        f = open(self.filenameofSSS,'rb')
         SSS = pickle.load(f)
         self.SSS = SSS
         
@@ -178,7 +236,7 @@ class Mysharedfile:
         assert self.filenameofSSS != '' # The pointer must contain the filename of a Secret Sharing Scheme SSS
         pointertomysharedfile = Mysharedfile(self.filename, None, self.filenameofSSS, [], self.epoch)
         s = 'pointerto'+self.filename+'.pointer'
-        f = open(s,'w')
+        f = open(s,'wb')
         pickle.dump(pointertomysharedfile,f)
         f.close()
         

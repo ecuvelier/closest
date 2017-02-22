@@ -51,15 +51,13 @@ print('Sharing scheme created...')
 #SL = SSS.share(a)
 
 
-
+"""
 f = open('test.png.tar.gz','rb')
-s = f.read()
+b = f.read()
 f.close()
 
-bs = mf.toBin(s)
+bs = mf.appendEndBytes(b)
 
-
-"""
 #print 'bs',bs
 Mlist = SSS.encode(bs)
 #print 'Mlist',Mlist
@@ -69,17 +67,9 @@ ML = SSS.retrievelist(SLM)
 
 bx = SSS.decode(ML)
 #print 'bx',bx
-sb = mf.toChar(bx)
-print s == sb
+sb = mf.removeEndBytes(bx)
 
-
-try:save
-    f = open('test.png','r')
-except :
-    print 'nope'
-else :
-    print 'yes'
-    
+print( b == sb)
 """
 
 sharedfile = mf.Mysharedfile('testbis.png.tar.gz', SSS = None, filenameofSSS = './SSS/SSS512')

@@ -9,6 +9,7 @@ email : firstname.lastname@uclouvain.be
 """
 
 from mathTools.field import Field
+import managefiles as mf
 import pickle
 
 class SecretSharingScheme:
@@ -48,15 +49,15 @@ class SecretSharingScheme:
     def reshare(self,shareslist):
         raise NotImplementedError('subclasses must override reshare()!')
         
-    def encode(self,s,typ):
+    def encode(self,b):
         """
-        encode string s into the right format for further sharing
+        encode bytes array b into the right format for further sharing
         """
         raise NotImplementedError('subclasses must override encode()!')
         
     def decode(self,m):
         """
-        decode m from the sharing format back to the binary string
+        decode m from the sharing format back to the bytes array
         """
         raise NotImplementedError('subclasses must override decode()!')
         
@@ -76,7 +77,7 @@ class SecretSharingScheme:
         """
         save the secret sharing scheme into the file 'filename' using pickle
         """
-        f = open(filename, 'w')
+        f = open(filename, 'wb')
         pickle.dump(self,f)
         f.close()
         
@@ -198,23 +199,50 @@ class ShamirSecretSharing(SecretSharingScheme):
         
         return newshareslist
         
-    def encode(self,s,typ):
+    def encode(self,b):
         """
-        encode binary string s into the right format for further sharing
-        typ must be 'bin' or 'hex' depending of the format of the string 
-        (binary or hexadecimal)
+        encode bytes array b into the right format for further sharing
         """
-        assert typ == 'bin' or typ == 'hex'        
         
         F = self.F
         
-        k = len(s)
+        k = len(b)
         messageslist = []
+        
+        plp = len(bin(self.p))-2
+        blockSize = int(plp/8)-1
+        #print('block size :'+ str(blockSize))
+        
+        pad = k % blockSize
+        if pad != 0 :
+            '''
+            append 0 to b so as it has the desirable length
+            '''
+            for i in range(blockSize-pad):
+                b = b + bytes([0])
+
+        k = len(b)
+        #print('k: '+str(k))
+        assert k % blockSize == 0
+        #nbBlocks = int(k/blockSize)                
+        
+        T = mf.fromBytestoInt(b,blockSize)
+        
+        for i in range(len(T)):
+            assert T[i]<self.p-1
+            m = F.elem(T[i])
+            messageslist.append(m)
+        
+        """
+        #DEPRECATED
+        
         plp = len(bin(self.p-1))-2
         if typ == 'bin' :
             lp = plp-1 # bit length of p minus 1
-        else :
+        elif typ == 'hex' :
             lp = int(plp/16)
+        else :
+            lp = 0
         
         index = 0
         
@@ -228,14 +256,26 @@ class ShamirSecretSharing(SecretSharingScheme):
                 m = F.elem(int(ms,16))
             messageslist.append(m)
             index += lp
+        """
             
         return messageslist
             
         
     def decode(self,messageslist):
         """
-        decode m from the sharing format back to the binary string
+        decode m from the sharing format back to the bytes array
         """
+        plp = len(bin(self.p))-2
+        blockSize = int(plp/8)-1
+        
+        T = ()
+        for m in messageslist:
+            T = T +(m.val,)
+        
+        return  mf.fromInttoBytes(T,blockSize)
+        
+        """
+        #DEPRECATED
         lp = len(bin(self.p))-3
         s =''
         for m in messageslist:
@@ -246,6 +286,7 @@ class ShamirSecretSharing(SecretSharingScheme):
             s += sm
             
         return s
+        """
         
     def shareToBin(self, share):
         ai,si = share

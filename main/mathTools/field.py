@@ -23,7 +23,7 @@ def myrandom(a,b):
     return a random number between a and b
     """
     c = b-a
-    l = ceil(len(bin(c))-2/8)
+    l = int(((len(bin(c))-2)/8))
     r = int(hexlify(os.urandom(max(l,128))),16)%(c+1)
     assert a+r<=b
     return a+r
@@ -77,7 +77,7 @@ class Field(fingexp.FingExp):
         '''
         if high == None :
             high = int(self.p-1)
-        rand = randint(int(low),int(high))
+        rand = myrandom(int(low),int(high))
         return self.elem(rand)
 
     def __eq__(self, other):
