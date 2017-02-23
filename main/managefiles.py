@@ -13,6 +13,7 @@ import secretsharing as sss
 import time
 from hashlib import sha256
 from binascii import hexlify
+import tarfile #zipfile#gzip, shutil
 import os
 
 
@@ -167,6 +168,14 @@ def hashname(string):
     Return a SHA-256 of string in hexa decimal representation
     """
     return str(hexlify(sha256(bytes(string,'ascii')).digest()))
+    
+def compress(directoryname):
+    tf = tarfile.open(directoryname+'.tar.xz', 'w:xz')
+    for dirname, subdirs, files in os.walk(directoryname):
+        tf.add(dirname)
+        for filename in files:
+            tf.add(os.path.join(dirname, filename))
+    tf.close()
 
     
 class Mysharedfile:
