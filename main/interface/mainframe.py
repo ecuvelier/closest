@@ -246,11 +246,16 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     actiontree.configure(yscrollcommand=sc2.set)
     sc2.grid(column = 7,row = 3, sticky = (N,S))
     
-    delactions = ttk.Button(actionframe, text="Cancel Tasks",command=lambda: com.cancel_tasks(actiontree,str(mainframe),currentProjects,console))
+    progBar = ttk.Progressbar(actionframe, orient=HORIZONTAL, length=200, mode='determinate')
+    progBar.grid(column=5, columnspan = 2, row=11,sticky=(W,E))
+    
+    delactions = ttk.Button(actionframe, text="Cancel Tasks",command=lambda: com.cancel_tasks(actiontree,str(mainframe),currentProjects,console,progBar))
     delactions.grid(column=5, row=10,sticky=(W,E))
     
-    launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks())
+    launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks(actiontree,str(mainframe),currentProjects,console,progBar))
     launchactions.grid(column=6, row=10,sticky=(W,E))
+    
+    
     
     actionframe.columnconfigure(5,weight=1)
     actionframe.rowconfigure(3,weight=1)

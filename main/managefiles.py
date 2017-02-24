@@ -256,7 +256,7 @@ class Mysharedfile:
                 os.mkdir(directoryname)
             except :
                 pass #the directory already exists
-        pointertomysharedfile = Mysharedfile(self.filename, None, self.filenameofSSS, [],self.numberofmessages, self.salt, self.epoch)
+        pointertomysharedfile = Mysharedfile(self.filename, None, self.filenameofSSS, [],self.numberofmessages, self.salt, self.listoflocations, self.epoch)
         s = directoryname+'/pointerto'+self.filename+'.pointer'
         f = open(s,'wb')
         pickle.dump(pointertomysharedfile,f)

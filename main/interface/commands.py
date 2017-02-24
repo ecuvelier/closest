@@ -179,9 +179,11 @@ def restore(tree,frameid,currentProjects,console):
         currentStatus = currentProjects[frameid]['fileDic'][item]['status']
         if currentStatus == 'to share' :
             currentProjects[frameid]['fileDic'][item]['status']= 'not shared'
+            currentProjects[frameid]['fileDic'][item]['planned']= False
             tree.set(item,1,'not shared')
         elif currentStatus == 'to delete' or currentStatus == 'to recover' :
             currentProjects[frameid]['fileDic'][item]['status']= 'shared'
+            currentProjects[frameid]['fileDic'][item]['planned']= False
             tree.set(item,1,'shared')
         else :
             pass
@@ -194,11 +196,14 @@ def plan_actions(actiontree,frameid,currentProjects):
         if not itemPlanned :
             if itemStatus == 'to share' :
                 actiontree.insert('', 'end',item, text='share '+d[item]['filename'])
+                d[item]['planned'] = True
             elif itemStatus == 'to recover' :
                 actiontree.insert('', 'end',item, text='recover '+d[item]['filename'])
+                d[item]['planned'] = True
             elif itemStatus == 'to remove' :
                 actiontree.insert('', 'end',item, text='remove '+d[item]['filename'])
-            d[item]['planned'] = True
+                d[item]['planned'] = True
+            
             
     
 
@@ -234,7 +239,8 @@ def checkall(*args):
 
 ######### TASKS FRAME ############
 
-def cancel_tasks(actiontree,frameid,currentProjects,console):
+def cancel_tasks(actiontree,frameid,currentProjects,console,progBar):
+    progBar.configure(value = 0)
     for item in actiontree.selection() :
         fname = currentProjects[frameid]['fileDic'][item]['filename']
         currentProjects[frameid]['fileDic'][item]['planned'] = False
@@ -242,9 +248,26 @@ def cancel_tasks(actiontree,frameid,currentProjects,console):
         WriteConsole(console,'Action on '+fname+' canceled')
 
 
-def execute_tasks(*args):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+def execute_tasks(actiontree,frameid,currentProjects,console,progBar):
+    #messagebox.showinfo(message='Not Implemented Yet')
+    #pass
+    progBar.configure(value = 0)
+    #progBar.step(50)
+    cd = currentProjects[frameid]['fileDic']
+    nbofActions = 0
+    for item in cd:
+        if cd[item]['planned'] == True :
+            nbofActions +=  1
+            
+    st = 100/nbofActions
+    for item in cd:
+        if cd[item]['planned'] == True :
+            fname = cd[item]['filename']
+            itemStatus = cd[item]['status']
+            WriteConsole(console,'Execute task << '+itemStatus+' >> on '+fname)
+            lv = progBar.cget('value')
+            progBar.configure(value = lv+st)
+    
 
 ######### CONSOLE FRAME ###########
 
