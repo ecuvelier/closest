@@ -180,7 +180,10 @@ def compress(fileordirectoryname):
                 tf.add(os.path.join(dirname, filename))
         tf.close()
     else :
-        pass
+        tf = tarfile.open(fileordirectoryname+'.tar.xz', 'w:xz')
+        tf.add(fileordirectoryname)
+        tf.close()
+    return os.path.abspath('./')+fileordirectoryname+'.tar.xz'
 
     
 class Mysharedfile:
