@@ -292,8 +292,10 @@ def cancel_tasks(actiontree,frameid,currentProjects,console,progBar):
 
 
 def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
-    #messagebox.showinfo(message='Not Implemented Yet')
-    #pass
+     try :
+         os.mkdir('/tmp/')
+     except :
+         pass #the directory already exists
     progBar.configure(value = 0)
     #progBar.step(50)
     cd = currentProjects[frameid]['fileDic']
