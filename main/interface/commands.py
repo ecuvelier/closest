@@ -9,11 +9,22 @@ email : firstname.lastname@uclouvain.be
 """
 from tkinter import *
 from tkinter import filedialog, messagebox
+from binascii import hexlify
 import os
 import project_window
 import pickle
 import mainframe as mf
 import time
+
+def myrandom(a,b):
+    """
+    return a random number between a and b
+    """
+    c = b-a
+    l = int(((len(bin(c))-2)/8))
+    r = int(hexlify(os.urandom(max(l,128))),16)%(c+1)
+    assert a+r<=b
+    return a+r
 
 def getname(s):
     """
@@ -27,6 +38,38 @@ def getname(s):
         else :
             k = c + k
     return k
+    
+
+def getEpoch(projDic):
+    print(projDic)
+    def toSeconds(a1,a2):
+        if a2 == 'day(s)':
+            return a1*86400
+        elif a2 == 'week(s)':
+            return a1*604800
+        elif a2 == 'month(s)':
+            return a1*2678400
+        elif a2 == 'year(s)':
+            return a1*31536000
+            
+    epochDic = {}       
+            
+    for location in projDic['locDic']:
+        e1 = projDic['locDic'][location]['e1']
+        e2 = projDic['locDic'][location]['e2']
+        de1 = projDic['locDic'][location]['de1']
+        de2 = projDic['locDic'][location]['de2']
+        
+        n1 = toSeconds(int(e1),e2)
+        n2 = toSeconds(int(de1),de2)
+        rn2 = myrandom(0,n2)
+        
+        epochDic[location] = n1,rn2
+        
+    return epochDic
+        
+            
+            
 
 
 ################### MENU INTERFACE ################################
@@ -248,7 +291,7 @@ def cancel_tasks(actiontree,frameid,currentProjects,console,progBar):
         WriteConsole(console,'Action on '+fname+' canceled')
 
 
-def execute_tasks(actiontree,frameid,currentProjects,console,progBar):
+def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
     #messagebox.showinfo(message='Not Implemented Yet')
     #pass
     progBar.configure(value = 0)
@@ -264,9 +307,24 @@ def execute_tasks(actiontree,frameid,currentProjects,console,progBar):
         if cd[item]['planned'] == True :
             fname = cd[item]['filename']
             itemStatus = cd[item]['status']
-            WriteConsole(console,'Execute task << '+itemStatus+' >> on '+fname)
-            lv = progBar.cget('value')
-            progBar.configure(value = lv+st)
+            
+            if itemStatus == 'to share':
+                
+                tree.set(item,1,'shared')
+                ct = time.ctime()
+                tree.set(item,2,ct)
+                epochDic = getEpoch(currentProjects[frameid])
+                e1,de1 = min(epochDic.values())
+                ect = time.ctime(time.time()+e1+de1)
+                tree.set(item,3,ect)
+                WriteConsole(console,'Execute task << '+itemStatus+' >> on '+fname)
+                lv = progBar.cget('value')
+                currentProjects[frameid]['fileDic'][item]['planned'] = False
+                currentProjects[frameid]['fileDic'][item]['shadate'] = ct
+                currentProjects[frameid]['fileDic'][item]['expdate'] = ect
+                currentProjects[frameid]['fileDic'][item]['status'] = 'shared'
+                actiontree.delete(item)
+                progBar.configure(value = lv+st)
     
 
 ######### CONSOLE FRAME ###########

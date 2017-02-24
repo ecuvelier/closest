@@ -95,7 +95,7 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     console.config(state=DISABLED)
     
     
-    for child in consoleframe.winfo_children(): 
+    for child in consoleframe.winfo_children():
         child.grid_configure(padx=5, pady=5)
     
     ################ EXPLO FRAME ########################
@@ -173,7 +173,7 @@ def create_mainframe(parent,currentProjects,projectDic={}):
         child.grid_configure(padx=5, pady=5)
         
         
-    ################ PLACES FRAME ########################
+    ################ PLACES FRAME ########################,progBar
     emplaframe = ttk.Labelframe(mainframe, text='Storage Locations')
     emplaframe.grid(column=10,row=30, sticky=(N,S,E,W))
     
@@ -252,7 +252,7 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     delactions = ttk.Button(actionframe, text="Cancel Tasks",command=lambda: com.cancel_tasks(actiontree,str(mainframe),currentProjects,console,progBar))
     delactions.grid(column=5, row=10,sticky=(W,E))
     
-    launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks(actiontree,str(mainframe),currentProjects,console,progBar))
+    launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks(tree,actiontree,str(mainframe),currentProjects,console,progBar))
     launchactions.grid(column=6, row=10,sticky=(W,E))
     
     

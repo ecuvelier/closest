@@ -169,13 +169,18 @@ def hashname(string):
     """
     return str(hexlify(sha256(bytes(string,'ascii')).digest()))
     
-def compress(directoryname):
-    tf = tarfile.open(directoryname+'.tar.xz', 'w:xz')
-    for dirname, subdirs, files in os.walk(directoryname):
-        tf.add(dirname)
-        for filename in files:
-            tf.add(os.path.join(dirname, filename))
-    tf.close()
+def compress(fileordirectoryname):
+    try :
+        f = open(fileordirectoryname)
+    except IsADirectoryError :
+        tf = tarfile.open(fileordirectoryname+'.tar.xz', 'w:xz')
+        for dirname, subdirs, files in os.walk(fileordirectoryname):
+            tf.add(dirname)
+            for filename in files:
+                tf.add(os.path.join(dirname, filename))
+        tf.close()
+    else :
+        pass
 
     
 class Mysharedfile:
