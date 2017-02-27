@@ -11,10 +11,11 @@ from tkinter import *
 from tkinter import filedialog, messagebox
 from binascii import hexlify
 import os
-import project_window
+from interface import project_window
+from interface import mainframe as mf
 import pickle
-import mainframe as mf
-from SSS.secretsharing import secretsharing as ss
+#import tools.fingexp as fingexp
+from sss import secretsharing as ss
 import time
 
 def myrandom(a,b):
@@ -73,7 +74,7 @@ def builtSSS(projDic):
     SSSType = projDic['SSS']
     SSSThreshold = int(projDic['Threshold'])
     SSS_n = int(projDic['Nb_of_loc'])
-    SSS_modsize = int(projDic['Mod'])
+    SSS_modsize = projDic['Mod']
     if SSSType == 'Shamir' :
         Fp = getField(SSS_modsize)
         return ss.ShamirSecretSharing(Fp,SSSThreshold,SSS_n)

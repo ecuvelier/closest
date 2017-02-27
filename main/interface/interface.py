@@ -11,8 +11,8 @@ email : firstname.lastname@uclouvain.be
 from tkinter import *
 from tkinter import ttk
 #from tkinter import filedialog
-import commands as com
-import mainframe as mf
+import interface.commands as com
+import interface.mainframe as mf
 #import os
 
 

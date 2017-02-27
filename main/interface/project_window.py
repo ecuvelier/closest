@@ -10,7 +10,7 @@ email : firstname.lastname@uclouvain.be
 
 from tkinter import *
 from tkinter import ttk
-import commands as com
+from interface import commands as com
 
 def create_project_window(root,nb,currentProjects):
     
