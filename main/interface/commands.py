@@ -14,6 +14,7 @@ import os
 import project_window
 import pickle
 import mainframe as mf
+from SSS.secretsharing import secretsharing as ss
 import time
 
 def myrandom(a,b):
@@ -67,9 +68,24 @@ def getEpoch(projDic):
         epochDic[location] = n1,rn2
         
     return epochDic
+    
+def builtSSS(projDic):
+    SSSType = projDic['SSS']
+    SSSThreshold = int(projDic['Threshold'])
+    SSS_n = int(projDic['Nb_of_loc'])
+    SSS_modsize = int(projDic['Mod'])
+    if SSSType == 'Shamir' :
+        Fp = getField(SSS_modsize)
+        return ss.ShamirSecretSharing(Fp,SSSThreshold,SSS_n)
+    else :
+        raise NotImplementedError
         
-            
-            
+def getField(modSize):
+    s = 'SSS'+modSize
+    f = open('./SSS/'+s,'rb')
+    Fp = pickle.load(f)
+    f.close()
+    return Fp
 
 
 ################### MENU INTERFACE ################################
@@ -81,11 +97,13 @@ def save_project(nb,currentProjects):
     
     tabname = nb.select()
     projectDic = currentProjects[tabname]
+    pDcopy = projectDic.copy()
+    pDcopy['builtSSS']  = None #Do not save the SSS used (redundant)
 
     filename = filedialog.asksaveasfilename(initialfile=projectDic['name'],defaultextension='.closest')
     if not filename == '' and not filename == ():
         f = open(filename,'wb')
-        pickle.dump(projectDic,f)
+        pickle.dump(pDcopy,f)
         f.close()
    
 def open_project(nb,currentProjects):
@@ -98,6 +116,7 @@ def open_project(nb,currentProjects):
         newframe = mf.create_mainframe(nb,currentProjects,projectDic)
         #print(newframe)
         currentProjects[str(newframe)] = projectDic
+        currentProjects[str(newframe)]['builtSSS'] = builtSSS(projectDic)
         nb.add(newframe, text=projectDic['name'])
     
 def modify_project(*args):
@@ -128,6 +147,12 @@ def closetab(notebook,tab):
     r = messagebox.askyesno(message='Are you sure you want to close the project?',icon='question', title='Close Project')
     if r :
         notebook.forget(tab)
+        
+def freeze(frameid):
+    pass
+
+def unfreeze(frameid):
+    pass
         
         
 ######### EXPLO FRAME ############
@@ -292,10 +317,12 @@ def cancel_tasks(actiontree,frameid,currentProjects,console,progBar):
 
 
 def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
-     try :
-         os.mkdir('/tmp/')
-     except :
-         pass #the directory already exists
+    
+    freeze(frameid)
+    try :
+        os.mkdir('/tmp/')
+    except :
+        pass #the directory already exists
     progBar.configure(value = 0)
     #progBar.step(50)
     cd = currentProjects[frameid]['fileDic']
@@ -304,7 +331,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
         if cd[item]['planned'] == True :
             nbofActions +=  1
             
-    st = 100/nbofActions
+    st1 = 100/nbofActions
     for item in cd:
         if cd[item]['planned'] == True :
             fname = cd[item]['filename']
@@ -312,6 +339,19 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
             
             if itemStatus == 'to share':
                 
+                compressedfilename = mf.compress(fname)
+                
+                sharedfile = mf.Mysharedfile(compressedfilename, SSS = currentProjects[frameid]['builtSSS'])
+                sharedfile.sharefile() #Build the list of shares
+                k = (sharedfile.numberofmessages)*(sharedfile.SSS.n)
+                st2 = st1/k
+                dN = []
+                for lockey in currentProjects[frameid]['locDic']:
+                    locDir = lockey+'_'+currentProjects[frameid]['locDic']['name']
+                    dN.append(locDir)
+                dN.sort()
+                sharedfile.saveShares(directorynames = dN, pBar = progBar, progstep = st2) #TODO : Save the shares in the correct locations and not in directories
+                      
                 tree.set(item,1,'shared')
                 ct = time.ctime()
                 tree.set(item,2,ct)
@@ -320,13 +360,19 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                 ect = time.ctime(time.time()+e1+de1)
                 tree.set(item,3,ect)
                 WriteConsole(console,'Execute task << '+itemStatus+' >> on '+fname)
-                lv = progBar.cget('value')
-                currentProjects[frameid]['fileDic'][item]['planned'] = False
-                currentProjects[frameid]['fileDic'][item]['shadate'] = ct
-                currentProjects[frameid]['fileDic'][item]['expdate'] = ect
-                currentProjects[frameid]['fileDic'][item]['status'] = 'shared'
+                cd[item]['planned'] = False
+                cd[item]['shadate'] = ct
+                cd[item]['expdate'] = ect
+                cd[item]['status'] = 'shared'
                 actiontree.delete(item)
-                progBar.configure(value = lv+st)
+                
+                sharedfile.SSS = None  # Erase SSS
+                sharedfile.listofsharesofmessages = [] # Erase lsm
+                cd[item]['pointer'] = sharedfile
+                
+                os.remove(compressedfilename)
+                
+    unfreeze(frameid)
     
 
 ######### CONSOLE FRAME ###########
@@ -356,6 +402,7 @@ def save_open_project(root,win,nb,projectDic,currentProjects):
     newframe = mf.create_mainframe(nb,currentProjects,projectDic)
     nb.add(newframe, text=projectDic['name'])
     currentProjects[str(newframe)] = projDCopy
+    currentProjects[str(newframe)]['builtSSS'] = builtSSS(projectDic)
     win.destroy()
     newframe.focus()
     

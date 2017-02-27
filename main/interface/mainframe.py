@@ -253,6 +253,7 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     delactions.grid(column=5, row=10,sticky=(W,E))
     
     launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks(tree,actiontree,str(mainframe),currentProjects,console,progBar))
+    #TODO: add a functionality to stop the execution of the tasks (modify the appearance of button)
     launchactions.grid(column=6, row=10,sticky=(W,E))
     
     

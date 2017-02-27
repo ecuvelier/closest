@@ -180,6 +180,7 @@ def compress(fileordirectoryname):
                 tf.add(os.path.join(dirname, filename))
         tf.close()
     else :
+        f.close()
         tf = tarfile.open(fileordirectoryname+'.tar.xz', 'w:xz')
         tf.add(fileordirectoryname)
         tf.close()
@@ -188,18 +189,16 @@ def compress(fileordirectoryname):
     
 class Mysharedfile:
     
-    def __init__(self,filename, SSS = None, filenameofSSS = '',listofsharesofmessages = [], numberofmessages = 0, salt = 0 ,listoflocations = [],epoch = 2678400 ):
+    def __init__(self,filename, SSS = None, filenameofSSS = '',listofsharesofmessages = [], salt = 0 ):
         """
         Construct a mysharedfile object given
         - filename, the name of the file
         - eventually the secret sharing scheme used SSS
         - eventually the name of the file, filenameofSSS, containing the SSS
         - eventually a list of shares : listofsharesofmessages
-        - eventually a list of the messages locations where each element is 
-        a list 'msgID' for every message and in the list 'msgID',
-        each element is on the form (shareID, location)
-        - epoch is the interval of time after wich a file has to be reshared, 
-        by default the time is one month
+        - eventually a salt : 8 bytes in hexadecimal if not a salt is generated 
+        randomly, this is used to generate the filename of the shares
+
         """
         if not SSS == None :
             assert type(SSS) == sss.SecretSharingScheme
@@ -208,9 +207,7 @@ class Mysharedfile:
         self.SSS = SSS
         self.filenameofSSS = filenameofSSS
         self.listofsharesofmessages = listofsharesofmessages
-        self.numberofmessages = numberofmessages
-        self.timestamp = time.time()
-        self.epoch = epoch
+        self.numberofmessages = len(self.listofsharesofmessages)
         if salt == 0 :
             self.salt = hexlify(os.urandom(8))
         else : 
@@ -264,7 +261,8 @@ class Mysharedfile:
                 os.mkdir(directoryname)
             except :
                 pass #the directory already exists
-        pointertomysharedfile = Mysharedfile(self.filename, None, self.filenameofSSS, [],self.numberofmessages, self.salt, self.listoflocations, self.epoch)
+        pointertomysharedfile = Mysharedfile(self.filename, None, self.filenameofSSS, [], self.salt)
+        pointertomysharedfile.numberofmessages = self.numberofmessages
         s = directoryname+'/pointerto'+self.filename+'.pointer'
         f = open(s,'wb')
         pickle.dump(pointertomysharedfile,f)
@@ -272,7 +270,7 @@ class Mysharedfile:
         
         return s
         
-    def saveShares(self,directorynames = [], numberofparties = 0):
+    def saveShares(self,directorynames = [], numberofparties = 0 ,pBar = None, progStep = 0):
         """
         This saves the shares into files (using pickles) that are stored into
         ./directory/sharej where j range from 0 to numberofshares
@@ -322,6 +320,10 @@ class Mysharedfile:
                 f.write(byteshare)
                 f.close()
                 sItem.append(st+'.share')
+                if not pBar == None :
+                    # feedback on the progression of the sharing
+                    lv = pBar.cget('value')
+                    pBar.configure(value = lv+progStep)
             sList.append(sItem)
                 
         return sList
