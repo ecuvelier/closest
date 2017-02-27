@@ -73,7 +73,7 @@ def create_project_window(root,nb,currentProjects):
     locframe.grid(column=10,row=20, sticky=(N,S,E,W))
     
     number_of_locations = StringVar()
-    number_of_locations.set(1)
+    number_of_locations.set(0)
     
     locnb = ttk.Notebook(locframe)
     locnb.grid(column=10, row=20,columnspan=90, sticky=(N, S, E, W))

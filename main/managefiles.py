@@ -184,7 +184,7 @@ def compress(fileordirectoryname):
         tf = tarfile.open(fileordirectoryname+'.tar.xz', 'w:xz')
         tf.add(fileordirectoryname)
         tf.close()
-    return os.path.abspath('./')+fileordirectoryname+'.tar.xz'
+    return fileordirectoryname+'.tar.xz'#os.path.abspath('./')+fileordirectoryname+'.tar.xz'
 
     
 class Mysharedfile:
@@ -201,7 +201,7 @@ class Mysharedfile:
 
         """
         if not SSS == None :
-            assert type(SSS) == sss.SecretSharingScheme
+            assert isinstance(SSS,sss.SecretSharingScheme)
         assert type(filename) == str
         self.filename = filename
         self.SSS = SSS
@@ -292,7 +292,7 @@ class Mysharedfile:
                     os.mkdir(dnj)
                 except :
                     pass #the directory already exists
-                sdir = dnj
+                sdir[j] = dnj
         else :
             # directorynames == []
             try :
@@ -313,7 +313,7 @@ class Mysharedfile:
                 share = shares_of_message[j]
                 spre = str(self.salt)+self.filename+'_share_of_msg_'+str(k)+'_for_party_'+str(j)
                 st = hashname(spre)
-                s = sdir[j]+st+'.share'
+                s = sdir[j]+'/'+st+'.share'
                 f = open(s,'wb')
                 #pickle.dump(share,f)
                 byteshare = SSS.shareToBytes(share)
@@ -324,6 +324,7 @@ class Mysharedfile:
                     # feedback on the progression of the sharing
                     lv = pBar.cget('value')
                     pBar.configure(value = lv+progStep)
+                    #time.sleep(0.1)
             sList.append(sItem)
                 
         return sList
@@ -385,7 +386,7 @@ class Mysharedfile:
         self.listofsharesofmessages = LOSM
         
     def __str__(self):
-        s = 'Pointer to '+self.filename+' created on '+str(time.ctime(self.timestamp))+'\n this pointer uses the SSS '+str(self.SSS)+'\n stored in '+self.filenameofSSS+'\n it also should refresh every '+str(self.epoch)+' seconds'
+        s = 'Pointer to '+self.filename+'\n this pointer uses the SSS '+str(self.SSS)+'\n stored in '+self.filenameofSSS
         return s
         
     def __repr__(self):

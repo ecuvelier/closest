@@ -13,6 +13,7 @@ from binascii import hexlify
 import os
 from interface import project_window
 from interface import mainframe as mf
+import managefiles
 import pickle
 #import tools.fingexp as fingexp
 from secretSharingTools import secretsharing as ss
@@ -137,11 +138,15 @@ def help_func(*args):
 ################### MAINFRAME ################################
 
 def quick_save_project(projectDic,console):
-    filename = projectDic['filename']
-    f = open(filename,'wb')
-    pickle.dump(projectDic,f)
-    f.close()
-    WriteConsole(console,getname(filename)+' saved on '+time.ctime())
+    try :
+        filename = projectDic['filename']
+    except KeyError :
+        messagebox.showinfo(message='File not saved.\n The original file '+projectDic['name']+' was not found in its original location.\n Try saving via the Menu bar')
+    else :
+        f = open(filename,'wb')
+        pickle.dump(projectDic,f)
+        f.close()
+        WriteConsole(console,getname(filename)+' saved on '+time.ctime())
     
 
 def closetab(notebook,tab):
@@ -339,19 +344,24 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
             itemStatus = cd[item]['status']
             
             if itemStatus == 'to share':
+                WriteConsole(console,'Sharing '+fname)
                 
-                compressedfilename = mf.compress(fname)
+                compressedfilename = managefiles.compress(item)
                 
-                sharedfile = mf.Mysharedfile(compressedfilename, SSS = currentProjects[frameid]['builtSSS'])
+                SecSharSchem =  currentProjects[frameid]['builtSSS']
+                
+                sharedfile = managefiles.Mysharedfile(compressedfilename, SSS = SecSharSchem )
                 sharedfile.sharefile() #Build the list of shares
-                k = (sharedfile.numberofmessages)*(sharedfile.SSS.n)
+                k = (sharedfile.numberofmessages)*(SecSharSchem.n)
+                #print(sharedfile.numberofmessages)
+                #print(SecSharSchem.n)
                 st2 = st1/k
                 dN = []
                 for lockey in currentProjects[frameid]['locDic']:
-                    locDir = lockey+'_'+currentProjects[frameid]['locDic']['name']
+                    locDir = lockey+'_'+currentProjects[frameid]['locDic'][lockey]['name']
                     dN.append(locDir)
                 dN.sort()
-                sharedfile.saveShares(directorynames = dN, pBar = progBar, progstep = st2) #TODO : Save the shares in the correct locations and not in directories
+                sharedfile.saveShares(directorynames = dN, pBar = progBar, progStep = st2) #TODO : Save the shares in the correct locations and not in directories
                       
                 tree.set(item,1,'shared')
                 ct = time.ctime()
@@ -360,7 +370,6 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                 e1,de1 = min(epochDic.values())
                 ect = time.ctime(time.time()+e1+de1)
                 tree.set(item,3,ect)
-                WriteConsole(console,'Execute task << '+itemStatus+' >> on '+fname)
                 cd[item]['planned'] = False
                 cd[item]['shadate'] = ct
                 cd[item]['expdate'] = ect
@@ -372,6 +381,9 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                 cd[item]['pointer'] = sharedfile
                 
                 os.remove(compressedfilename)
+                
+                WriteConsole(console,fname+' shared' )
+                quick_save_project(currentProjects[frameid],console)
                 
     unfreeze(frameid)
     
