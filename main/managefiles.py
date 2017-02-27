@@ -185,6 +185,11 @@ def compress(fileordirectoryname):
         tf.add(fileordirectoryname)
         tf.close()
     return fileordirectoryname+'.tar.xz'#os.path.abspath('./')+fileordirectoryname+'.tar.xz'
+    
+def uncompress(filename):
+    tf = tarfile.open(filename, 'r:xz')
+    tf.extractall()
+    tf.close()
 
     
 class Mysharedfile:
@@ -384,6 +389,25 @@ class Mysharedfile:
                 LOSMitem.append(share)
             LOSM.append(LOSMitem)
         self.listofsharesofmessages = LOSM
+        
+    def erase_listofsharesmessages(self,sList,directorynames=[]):
+        SSS = self.SSS
+        n = SSS.n
+        sdir = [0]*n
+        if directorynames != [] :
+            n = len(directorynames)
+            for j in range(n):
+                sdir[j] = directorynames[j]
+        else :
+            # directorynames == []
+            for j in range(n) :
+                sdir[j] = './shares/shares_of_party_'+str(j)+'/'
+                
+        for sItem in sList:
+            for j in range(n) :
+                s = sdir[j]+sItem[j]
+                os.remove(s)
+                
         
     def __str__(self):
         s = 'Pointer to '+self.filename+'\n this pointer uses the SSS '+str(self.SSS)+'\n stored in '+self.filenameofSSS

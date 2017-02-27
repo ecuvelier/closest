@@ -326,7 +326,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
     
     freeze(frameid)
     try :
-        os.mkdir('/tmp/')
+        os.mkdir('/recovered files/')
     except :
         pass #the directory already exists
     progBar.configure(value = 0)
@@ -385,6 +385,48 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                 WriteConsole(console,fname+' shared' )
                 quick_save_project(currentProjects[frameid],console)
                 
+            elif itemStatus == 'to recover' or itemStatus == 'to remove':
+                if itemStatus == 'to remove' :
+                    WriteConsole(console,'removing '+ fname )
+                else : #itemStatus == 'to recover'
+                    WriteConsole(console,'recovering '+ fname )
+                    
+                SecSharSchem =  currentProjects[frameid]['builtSSS']
+                
+                sharedfile = cd[item]['pointer']
+                sharedfile.SSS = SecSharSchem
+                sL = sharedfile.recover_List_of_Filename_of_Shares()
+                dN = []
+                for lockey in currentProjects[frameid]['locDic']:
+                    locDir = lockey+'_'+currentProjects[frameid]['locDic'][lockey]['name']
+                    dN.append(locDir)
+                dN.sort()
+                
+                if itemStatus == 'to remove' :
+                    sharedfile.erase_listofsharesmessages(sL,dN)
+                    actiontree.delete(item)
+                    tree.delete(item)
+                    WriteConsole(console,fname+' removed' )
+                else : #itemStatus == 'to recover'
+                    sharedfile.rebuilt_listofsharesmessages(sL,dN)
+                    sharedfile.filename = '/recovered files/'+cd[item]['filename']
+                    sharedfile.rebuildfile()
+                    managefiles.uncompress(sharedfile.filename)
+                    os.remove(sharedfile.filename)
+                    
+                    tree.set(item,1,'not shared')
+                    tree.set(item,2,'')
+                    tree.set(item,3,'')
+                    cd[item]['planned'] = False
+                    cd[item]['shadate'] = ''
+                    cd[item]['expdate'] = ''
+                    cd[item]['status'] = 'not shared'
+                    actiontree.delete(item)
+                
+                    WriteConsole(console,fname+' recovered' )
+                    
+                quick_save_project(currentProjects[frameid],console)
+            
     unfreeze(frameid)
     
 
