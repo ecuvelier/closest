@@ -9,7 +9,7 @@ email : firstname.lastname@uclouvain.be
 """
 
 import pickle
-import secretsharing as sss
+from secretSharingTools import secretsharing as sss
 import time
 from hashlib import sha256
 from binascii import hexlify

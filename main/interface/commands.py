@@ -15,7 +15,7 @@ from interface import project_window
 from interface import mainframe as mf
 import pickle
 #import tools.fingexp as fingexp
-from sss import secretsharing as ss
+from secretSharingTools import secretsharing as ss
 import time
 
 def myrandom(a,b):
@@ -82,8 +82,8 @@ def builtSSS(projDic):
         raise NotImplementedError
         
 def getField(modSize):
-    s = 'SSS'+modSize
-    f = open('./SSS/'+s,'rb')
+    s = 'F'+modSize
+    f = open('./secretSharingTools/'+s,'rb')
     Fp = pickle.load(f)
     f.close()
     return Fp

@@ -10,10 +10,11 @@ email : firstname.lastname@uclouvain.be
 
 #import mathTools.field as field
 
-import secretsharing
+from secretSharingTools import secretsharing
 import gmpy2 as gmpy
 import managefiles as mf
 from mathTools import field
+import pickle
 
 p512 = gmpy.mpz(9319634055120059806745748435708214381572549431685774586671626637293434870481509294390553200298221079261837854412673960748108983618275089950667346940668503)
 # 512 bit long prime
@@ -40,6 +41,15 @@ def saveSSS():
         Fp = field.Field(p)
         SSSp = secretsharing.ShamirSecretSharing(Fp,3,5)
         SSSp.save('SSS'+str(len(bin(p))-2))
+        
+def saveField():
+    for p in primeslist :
+        Fp = field.Field(p)
+        f = open('F'+str(len(bin(p))-2),'wb')
+        pickle.dump(Fp,f)
+        f.close()
+        #SSSp = secretsharing.ShamirSecretSharing(Fp,3,5)
+        #SSSp.save('SSS'+str(len(bin(p))-2))
     
 
 Fp512 = field.Field(p512)
