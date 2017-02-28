@@ -255,7 +255,7 @@ def restore(tree,frameid,currentProjects,console):
             currentProjects[frameid]['fileDic'][item]['status']= 'not shared'
             currentProjects[frameid]['fileDic'][item]['planned']= False
             tree.set(item,1,'not shared')
-        elif currentStatus == 'to delete' or currentStatus == 'to recover' :
+        elif currentStatus == 'to remove' or currentStatus == 'to recover' :
             currentProjects[frameid]['fileDic'][item]['status']= 'shared'
             currentProjects[frameid]['fileDic'][item]['planned']= False
             tree.set(item,1,'shared')
@@ -326,7 +326,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
     
     freeze(frameid)
     try :
-        os.mkdir('/recovered files/')
+        os.mkdir('./recovered files/')
     except :
         pass #the directory already exists
     progBar.configure(value = 0)
@@ -409,10 +409,10 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                     WriteConsole(console,fname+' removed' )
                 else : #itemStatus == 'to recover'
                     sharedfile.rebuilt_listofsharesmessages(sL,dN)
-                    sharedfile.filename = '/recovered files/'+cd[item]['filename']
+                    sharedfile.filename = './recovered files/'+cd[item]['filename']
                     sharedfile.rebuildfile()
                     managefiles.uncompress(sharedfile.filename)
-                    os.remove(sharedfile.filename)
+                    #os.remove(sharedfile.filename)
                     
                     tree.set(item,1,'not shared')
                     tree.set(item,2,'')

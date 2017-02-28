@@ -373,13 +373,13 @@ class Mysharedfile:
         else :
             # directorynames == []
             for j in range(n) :
-                sdir[j] = './shares/shares_of_party_'+str(j)+'/'
+                sdir[j] = './shares/shares_of_party_'+str(j)
                 
         LOSM = []
         for sItem in sList:
             LOSMitem = []
             for j in range(n) :
-                s = sdir[j]+sItem[j]
+                s = sdir[j]+'/'+sItem[j]
                 f = open(s,'rb')
                 byteshare = f.read()
                 #binsharel1 = f.readline()
