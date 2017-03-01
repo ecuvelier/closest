@@ -169,13 +169,11 @@ def hashname(string):
     """
     return str(hexlify(sha256(bytes(string,'ascii')).digest()))
     
-
-
-def compress(fileordirectoryname,pathf,isaDirectory):
-    
-    def getpath(pathf):
+def getpath(pathf):
         i = pathf.rfind('/')
         return pathf[:i]
+
+def compress(fileordirectoryname,pathf,isaDirectory):
     """   
     def getname(dirname):
         i = dirname[:-1].rfind('/')
@@ -189,9 +187,10 @@ def compress(fileordirectoryname,pathf,isaDirectory):
         pass
     """
         
-    tf = tarfile.open(fileordirectoryname+'.tar.xz', 'w:xz')
+    
         
     if isaDirectory :
+        tf = tarfile.open(fileordirectoryname[1:]+'.tar.xz', 'w:xz')
         main = os.getcwd()
         os.chdir(getpath(pathf[:-1]))
         for dirname, subdirs, files in os.walk(fileordirectoryname[1:]):
@@ -199,17 +198,22 @@ def compress(fileordirectoryname,pathf,isaDirectory):
             for fname in files :
                 tf.add(os.path.join(dirname, fname))
         os.chdir(main)
+        tf.close()
+        return fileordirectoryname[1:]+'.tar.xz'
                 
     else :
+        tf = tarfile.open(fileordirectoryname+'.tar.xz', 'w:xz')
         p = getpath(pathf)
         main = os.getcwd()
         os.chdir(p)
         tf.add(fileordirectoryname)
         #addFile(fileordirectoryname,L,tf)
         os.chdir(main)
+        tf.close()
+        return fileordirectoryname+'.tar.xz'
         
-    tf.close()
-    return fileordirectoryname+'.tar.xz'
+    
+    
 
 """
 def compress(fileordirectoryname,pathf,isaDirectory):
@@ -247,10 +251,17 @@ def compress(fileordirectoryname,pathf,isaDirectory):
     return fileordirectoryname+'.tar.xz'#os.path.abspath('./')+fileordirectoryname+'.tar.xz'
 """
 
-def uncompress(filename):
-    tf = tarfile.open(filename, 'r:xz')
+def uncompress(filename,pathf,isDirectory):
+    p = getpath(pathf)
+    main = os.getcwd()
+    os.chdir(p)
+    if isDirectory :
+        tf = tarfile.open(filename[1:], 'r:xz')
+    else :
+        tf = tarfile.open(filename, 'r:xz')
     tf.extractall()
     tf.close()
+    os.chdir(main)
 
     
 class Mysharedfile:
@@ -390,6 +401,7 @@ class Mysharedfile:
                     # feedback on the progression of the sharing
                     lv = pBar.cget('value')
                     pBar.configure(value = lv+progStep)
+                    print('here',lv,lv+progStep)
                     #time.sleep(0.1)
             sList.append(sItem)
                 

@@ -380,7 +380,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                 sharedfile.listofsharesofmessages = [] # Erase lsm
                 cd[item]['pointer'] = sharedfile
                 
-                #os.remove(compressedfilename)
+                os.remove(compressedfilename)
                 
                 WriteConsole(console,fname+' shared' )
                 quick_save_project(currentProjects[frameid],console)
@@ -409,10 +409,12 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                     WriteConsole(console,fname+' removed' )
                 else : #itemStatus == 'to recover'
                     sharedfile.rebuilt_listofsharesmessages(sL,dN)
-                    sharedfile.filename = './recovered files/'+cd[item]['filename']
+                    sharedfile.filename = './recovered files/'+cd[item]['filename']+'.tar.xz'
+                    filepath = sharedfile.filename
                     sharedfile.rebuildfile()
-                    managefiles.uncompress(sharedfile.filename)
-                    #os.remove(sharedfile.filename)
+                    sharedfile.filename = cd[item]['filename']
+                    managefiles.uncompress(sharedfile.filename+'.tar.xz',filepath,cd[item]['directory'])
+                    os.remove('./recovered files/'+cd[item]['filename']+'.tar.xz')
                     
                     tree.set(item,1,'not shared')
                     tree.set(item,2,'')
@@ -443,23 +445,22 @@ def WriteConsole(console,message):
 def save_open_project(root,win,nb,projectDic,currentProjects):
     print(projectDic)
     filename = filedialog.asksaveasfilename(initialfile=projectDic['name'],defaultextension='.closest')
-    projDCopy = projectDic.copy()
-    for location in projectDic['locDic']:
-        if projectDic['locDic'][location]['sa'] != 'remember pwd':
-            projDCopy['locDic'][location]['sa'] = ''
-            
-    projDCopy['filename'] = filename
-        
-    f = open(filename,'wb')
-    pickle.dump(projDCopy,f)
-    f.close()
-    
-    newframe = mf.create_mainframe(nb,currentProjects,projectDic)
-    nb.add(newframe, text=projectDic['name'])
-    currentProjects[str(newframe)] = projDCopy
-    currentProjects[str(newframe)]['builtSSS'] = builtSSS(projectDic)
-    win.destroy()
-    newframe.focus()
+    if not filename == '' and not filename == ():
+        projDCopy = projectDic.copy()
+        for location in projectDic['locDic']:
+            if projectDic['locDic'][location]['sa'] != 'remember pwd':
+                projDCopy['locDic'][location]['sa'] = ''
+                
+        projDCopy['filename'] = filename
+        f = open(filename,'wb')
+        pickle.dump(projDCopy,f)
+        f.close()
+        newframe = mf.create_mainframe(nb,currentProjects,projectDic)
+        nb.add(newframe, text=projectDic['name'])
+        currentProjects[str(newframe)] = projDCopy
+        currentProjects[str(newframe)]['builtSSS'] = builtSSS(projectDic)
+        win.destroy()
+        newframe.focus()
     
     root.mainloop()
 
