@@ -204,7 +204,7 @@ def addfile(tree,frameid,currentProjects):
         tree.set(s,0,size)
         tree.set(s,1,'not shared')
         tree.set(s,4,s)
-        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':'','planned':False}
+        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':'','planned':False,'directory':False}
 
 def adddir(tree,frameid,currentProjects):
     s =  filedialog.askdirectory()
@@ -215,7 +215,7 @@ def adddir(tree,frameid,currentProjects):
         tree.set(s,0,size)
         tree.set(s,1,'not shared')
         tree.set(s,4,s)
-        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':'','planned':False}
+        currentProjects[frameid]['fileDic'][s] = {'filename':fname,'size':size,'status':'not shared','shadate':'','expdate':'','planned':False,'directory':True}
 
 def share(tree,frameid,currentProjects,console):
     errorList = []
@@ -346,7 +346,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
             if itemStatus == 'to share':
                 WriteConsole(console,'Sharing '+fname)
                 
-                compressedfilename = managefiles.compress(item)
+                compressedfilename = managefiles.compress(fname,item,cd[item]['directory'])
                 
                 SecSharSchem =  currentProjects[frameid]['builtSSS']
                 
@@ -380,7 +380,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                 sharedfile.listofsharesofmessages = [] # Erase lsm
                 cd[item]['pointer'] = sharedfile
                 
-                os.remove(compressedfilename)
+                #os.remove(compressedfilename)
                 
                 WriteConsole(console,fname+' shared' )
                 quick_save_project(currentProjects[frameid],console)

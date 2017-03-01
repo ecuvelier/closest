@@ -169,23 +169,84 @@ def hashname(string):
     """
     return str(hexlify(sha256(bytes(string,'ascii')).digest()))
     
-def compress(fileordirectoryname):
-    try :
-        f = open(fileordirectoryname)
-    except IsADirectoryError :
-        tf = tarfile.open(fileordirectoryname+'.tar.xz', 'w:xz')
-        for dirname, subdirs, files in os.walk(fileordirectoryname):
+
+
+def compress(fileordirectoryname,pathf,isaDirectory):
+    
+    def getpath(pathf):
+        i = pathf.rfind('/')
+        return pathf[:i]
+    """   
+    def getname(dirname):
+        i = dirname[:-1].rfind('/')
+        return dirname[i:]
+    def addFile(fileordirectoryname,L,tf):
+        dirname, subdirs, files  = L
+        for fname in files :
+            if fname == fileordirectoryname :
+                pass
+    def addDirectory(L,tf):
+        pass
+    """
+        
+    tf = tarfile.open(fileordirectoryname+'.tar.xz', 'w:xz')
+        
+    if isaDirectory :
+        main = os.getcwd()
+        os.chdir(getpath(pathf[:-1]))
+        for dirname, subdirs, files in os.walk(fileordirectoryname[1:]):
             tf.add(dirname)
-            for filename in files:
-                tf.add(os.path.join(dirname, filename))
+            for fname in files :
+                tf.add(os.path.join(dirname, fname))
+        os.chdir(main)
+                
+    else :
+        p = getpath(pathf)
+        main = os.getcwd()
+        os.chdir(p)
+        tf.add(fileordirectoryname)
+        #addFile(fileordirectoryname,L,tf)
+        os.chdir(main)
+        
+    tf.close()
+    return fileordirectoryname+'.tar.xz'
+
+"""
+def compress(fileordirectoryname,pathf,isaDirectory):
+    def getname(s):
+        i = s[:-1].rfind('/')
+        return s[i:]
+    
+    def addDirectory(dirname,files,tf):
+        tf.add(dirname)
+        for filename in files:
+            tf.add(os.path.join(dirname, filename))
+    
+    if isaDirectory :
+        tf = tarfile.open(fileordirectoryname[1:]+'.tar.xz', 'w:xz')
+        L = os.walk(pathf)
+        for dirname, subdirs, files in L:
+            if getname(dirname) == fileordirectoryname :
+                addDirectory(fileordirectoryname,files,tf)
+                for subdirname in subdirs :
+                    for dirname, subdirs, files in L:
+                        if getname(dirname) == subdirname :
+                            addDirectory(dirname,files,tf)
         tf.close()
     else :
+        f = open(pathf,'rb')
+        b = f.read()
         f.close()
+        f2 = open(fileordirectoryname,'wb')
+        f2.write(b)
+        f2.close()
         tf = tarfile.open(fileordirectoryname+'.tar.xz', 'w:xz')
         tf.add(fileordirectoryname)
         tf.close()
+        os.remove(fileordirectoryname)
     return fileordirectoryname+'.tar.xz'#os.path.abspath('./')+fileordirectoryname+'.tar.xz'
-    
+"""
+
 def uncompress(filename):
     tf = tarfile.open(filename, 'r:xz')
     tf.extractall()
