@@ -12,7 +12,7 @@ from tkinter import *
 from tkinter import ttk
 #from tkinter import filedialog
 import interface.commands as com
-import interface.mainframe as mf
+#import interface.mainframe as mf
 #import os
 
 

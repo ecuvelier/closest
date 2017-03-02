@@ -12,7 +12,7 @@ email : firstname.lastname@uclouvain.be
 
 from secretSharingTools import secretsharing
 import gmpy2 as gmpy
-import managefiles as mf
+from secretSharingTools import managefiles as mf
 from mathTools import field
 import pickle
 

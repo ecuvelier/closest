@@ -9,7 +9,7 @@ email : firstname.lastname@uclouvain.be
 """
 
 from mathTools.field import Field
-import managefiles as mf
+from secretSharingTools import managefiles as mf
 import pickle
 
 class SecretSharingScheme:

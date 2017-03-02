@@ -14,7 +14,7 @@ import os
 from interface import project_window
 from interface import proccessing_window as p_w
 from interface import mainframe as mf
-import managefiles
+from secretSharingTools import managefiles
 import pickle
 #import tools.fingexp as fingexp
 from secretSharingTools import secretsharing as ss
