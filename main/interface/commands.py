@@ -111,10 +111,20 @@ def save_project(nb,currentProjects):
    
 def open_project(nb,currentProjects):
     filename = filedialog.askopenfilename()
-    if not filename == '' and not filename == ():
+    if not filename == '' and not filename == () :
+        if not '.closest' in filename:
+            messagebox.showinfo(message='Wrong format for '+filename, icon = 'error' )
+            return
         f = open(filename,'rb')
-        projectDic = pickle.load(f)
+        try :
+            projectDic = pickle.load(f)
+        except pickle.UnpicklingError :
+            messagebox.showinfo(message='Unable to exctract the project from '+filename+'\n\n (pickle error)', icon = 'error' )
+            return
         f.close()
+        if not type(projectDic) == dict :
+            messagebox.showinfo(message='Unable to exctract the project from '+filename+'\n\n (dict error)', icon = 'error' )
+            return
         print(projectDic)
         newframe = mf.create_mainframe(nb,currentProjects,projectDic)
         #print(newframe)
@@ -411,7 +421,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                     sharedfile.erase_listofsharesmessages(sL,dN)
                     actiontree.delete(item)
                     tree.delete(item)
-                    WriteConsole(console,fname+' removed' )
+                    WriteConsole(console,fname+' removed (shares removed as well)')
                 else : #itemStatus == 'to recover'
                     sharedfile.rebuilt_listofsharesmessages(sL,dN)
                     sharedfile.filename = './recovered files/'+cd[item]['filename']+'.tar.xz'
@@ -421,13 +431,13 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                     managefiles.uncompress(sharedfile.filename+'.tar.xz',filepath,cd[item]['directory'])
                     os.remove('./recovered files/'+cd[item]['filename']+'.tar.xz')
                     
-                    tree.set(item,1,'not shared')
-                    tree.set(item,2,'')
-                    tree.set(item,3,'')
+                    #tree.set(item,1,'not shared')
+                    #tree.set(item,2,'')
+                    #tree.set(item,3,'')
                     cd[item]['planned'] = False
-                    cd[item]['shadate'] = ''
-                    cd[item]['expdate'] = ''
-                    cd[item]['status'] = 'not shared'
+                    #cd[item]['shadate'] = ''
+                    #cd[item]['expdate'] = ''
+                    #cd[item]['status'] = 'not shared'
                     actiontree.delete(item)
                 
                     WriteConsole(console,fname+' recovered' )
