@@ -246,13 +246,15 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     actiontree.configure(yscrollcommand=sc2.set)
     sc2.grid(column = 7,row = 3, sticky = (N,S))
     
-    progBar = ttk.Progressbar(actionframe, orient=HORIZONTAL, length=200, mode='determinate')
-    progBar.grid(column=5, columnspan = 2, row=11,sticky=(W,E))
+    #progBarValue = StringVar()
+    #progBar = ttk.Progressbar(actionframe, orient=HORIZONTAL, mode='indeterminate')
+    #progBar.grid(column=5, columnspan = 2, row=11,sticky=(W,E))
+    #progBar.step(100)
     
-    delactions = ttk.Button(actionframe, text="Cancel Tasks",command=lambda: com.cancel_tasks(actiontree,str(mainframe),currentProjects,console,progBar))
+    delactions = ttk.Button(actionframe, text="Cancel Tasks",command=lambda: com.cancel_tasks(actiontree,str(mainframe),currentProjects,console))
     delactions.grid(column=5, row=10,sticky=(W,E))
     
-    launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks(tree,actiontree,str(mainframe),currentProjects,console,progBar))
+    launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks(tree,actiontree,str(mainframe),currentProjects,console,mainframe))
     #TODO: add a functionality to stop the execution of the tasks (modify the appearance of button)
     launchactions.grid(column=6, row=10,sticky=(W,E))
     

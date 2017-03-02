@@ -12,6 +12,7 @@ from tkinter import filedialog, messagebox
 from binascii import hexlify
 import os
 from interface import project_window
+from interface import proccessing_window as p_w
 from interface import mainframe as mf
 import managefiles
 import pickle
@@ -154,11 +155,14 @@ def closetab(notebook,tab):
     if r :
         notebook.forget(tab)
         
-def freeze(frameid):
-    pass
+def freeze(parent):
+    proccesingwindow,progBar = p_w.create_proccessing_window(parent)
+    progBar.start()
+    return proccesingwindow,progBar
 
-def unfreeze(frameid):
-    pass
+def unfreeze(proccesingwindow,progBar):
+    progBar.stop()
+    proccesingwindow.destroy()
         
         
 ######### EXPLO FRAME ############
@@ -313,8 +317,8 @@ def checkall(*args):
 
 ######### TASKS FRAME ############
 
-def cancel_tasks(actiontree,frameid,currentProjects,console,progBar):
-    progBar.configure(value = 0)
+def cancel_tasks(actiontree,frameid,currentProjects,console):
+    #progBar.configure(value = 0)
     for item in actiontree.selection() :
         fname = currentProjects[frameid]['fileDic'][item]['filename']
         currentProjects[frameid]['fileDic'][item]['planned'] = False
@@ -322,22 +326,23 @@ def cancel_tasks(actiontree,frameid,currentProjects,console,progBar):
         WriteConsole(console,'Action on '+fname+' canceled')
 
 
-def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
+def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
     
-    freeze(frameid)
+    p_win, pBar = freeze(parent)
     try :
         os.mkdir('./recovered files/')
     except :
         pass #the directory already exists
-    progBar.configure(value = 0)
+    #progBarValue.set(0)
     #progBar.step(50)
+    #progBar.start()
     cd = currentProjects[frameid]['fileDic']
     nbofActions = 0
     for item in cd:
         if cd[item]['planned'] == True :
             nbofActions +=  1
             
-    st1 = 100/nbofActions
+    #st1 = 100/nbofActions
     for item in cd:
         if cd[item]['planned'] == True :
             fname = cd[item]['filename']
@@ -352,16 +357,16 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                 
                 sharedfile = managefiles.Mysharedfile(compressedfilename, SSS = SecSharSchem )
                 sharedfile.sharefile() #Build the list of shares
-                k = (sharedfile.numberofmessages)*(SecSharSchem.n)
+                #k = (sharedfile.numberofmessages)*(SecSharSchem.n)
                 #print(sharedfile.numberofmessages)
                 #print(SecSharSchem.n)
-                st2 = st1/k
+                #st2 = st1/k
                 dN = []
                 for lockey in currentProjects[frameid]['locDic']:
                     locDir = lockey+'_'+currentProjects[frameid]['locDic'][lockey]['name']
                     dN.append(locDir)
                 dN.sort()
-                sharedfile.saveShares(directorynames = dN, pBar = progBar, progStep = st2) #TODO : Save the shares in the correct locations and not in directories
+                sharedfile.saveShares(directorynames = dN) #TODO : Save the shares in the correct locations and not in directories
                       
                 tree.set(item,1,'shared')
                 ct = time.ctime()
@@ -428,8 +433,9 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,progBar):
                     WriteConsole(console,fname+' recovered' )
                     
                 quick_save_project(currentProjects[frameid],console)
-            
-    unfreeze(frameid)
+                
+    #progBar.stop()    
+    unfreeze(p_win, pBar)
     
 
 ######### CONSOLE FRAME ###########

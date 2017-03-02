@@ -255,6 +255,7 @@ def uncompress(filename,pathf,isDirectory):
     p = getpath(pathf)
     main = os.getcwd()
     os.chdir(p)
+    #TODO: check if file already exists
     if isDirectory :
         tf = tarfile.open(filename[1:], 'r:xz')
     else :
@@ -397,12 +398,14 @@ class Mysharedfile:
                 f.write(byteshare)
                 f.close()
                 sItem.append(st+'.share')
+                '''
                 if not pBar == None :
                     # feedback on the progression of the sharing
-                    lv = pBar.cget('value')
-                    pBar.configure(value = lv+progStep)
-                    print('here',lv,lv+progStep)
+                    lv = float(pBar.get())
+                    #print(lv)
+                    pBar.set(str(lv+progStep))
                     #time.sleep(0.1)
+                '''
             sList.append(sItem)
                 
         return sList
@@ -478,7 +481,7 @@ class Mysharedfile:
                 
         for sItem in sList:
             for j in range(n) :
-                s = sdir[j]+sItem[j]
+                s = sdir[j]+'/'+sItem[j]
                 os.remove(s)
                 
         
