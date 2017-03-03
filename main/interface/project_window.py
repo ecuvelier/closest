@@ -31,8 +31,8 @@ def create_project_window(root,nb,currentProjects):
     menu_project.add_command(label='Open Project',command = lambda : com.open_modify_project(nb))
     menu_project.add_command(label='Save Project',command = lambda : com.save_edited_project(nb))
     
-    menu_synch.add_command(label='Synchronize Epoch',command = com.synch_epoch)
-    menu_synch.add_command(label='Synchronize Delta Epoch',command = com.synch_depoch)
+    menu_synch.add_command(label='Synchronize Epoch',command = lambda : com.synch_epoch())
+    menu_synch.add_command(label='Synchronize Delta Epoch',command = lambda : com.synch_depoch())
     menu_synch.add_separator()
     checkPMVar = StringVar()
     menu_synch.add_checkbutton(label='Always Use Pattern Masking',command = com.synch_pm, variable=checkPMVar, onvalue=1, offvalue=0)
