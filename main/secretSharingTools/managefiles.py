@@ -355,7 +355,7 @@ class Mysharedfile:
         if numberofshares is default, the number of shares used is n of the Secret Sharing Scheme self.SSS
         """
         SSS = self.SSS
-        sList = []
+        #sList = []
         if numberofparties == 0 :
             n = SSS.n
         else :
@@ -384,6 +384,35 @@ class Mysharedfile:
                 except :
                     pass #the directory already exists
                     
+        #r1 = len(self.listofsharesofmessages)
+        r2 = len(self.listofsharesofmessages[0])
+        #Loneshare = [0]*r1
+        #Lshares = [Loneshare]*r2
+        Lfiles = []
+        for j in range(r2):
+            spre = str(self.salt)+self.filename+'_shares_for_party_'+str(j)
+            st = hashname(spre)
+            sj = sdir[j]+'/'+st+'.share'
+            Lfiles.append(sj)
+            
+        def row(L,i):
+            '''
+            return row i of list L
+            '''
+            row_i = ()
+            for item in L:
+                row_i = row_i+(item[i],)
+            return row_i
+            
+        for j in range(r2) :
+            row_j = row(self.listofsharesofmessages,j)
+            sj = Lfiles[j]
+            fj = open(sj,'wb')
+            pickle.dump(row_j,fj)
+            fj.close()
+                
+            
+        """            
         for k in range(len(self.listofsharesofmessages)) :
             sItem = []
             shares_of_message = self.listofsharesofmessages[k]
@@ -407,8 +436,9 @@ class Mysharedfile:
                     #time.sleep(0.1)
                 '''
             sList.append(sItem)
+        """
                 
-        return sList
+        return Lfiles
         
     def recover_List_of_Filename_of_Shares(self,salt = 0,numberofparties = 0, numberofmessages = 0):
         sList = []
@@ -416,10 +446,12 @@ class Mysharedfile:
             n = self.SSS.n
         else :
             n = numberofparties
+        """
         if numberofmessages == 0 :
             nom = self.numberofmessages
         else :
             nom = numberofmessages
+        """
         if salt == 0 :
             slt = self.salt
         else :
@@ -428,6 +460,12 @@ class Mysharedfile:
         #sdir = [0]*n
         #for j in range(n) :
         #    sdir[j] = directoryname+'/shares_of_party_'+str(j)+'/'
+        for j in range(n) :
+            spre = str(slt)+self.filename+'_shares_for_party_'+str(j)
+            st = hashname(spre)
+            s = st+'.share'
+            sList.append(s)
+        """
         for k in range(nom) :
             sItem = []
             for j in range(n) :
@@ -436,6 +474,7 @@ class Mysharedfile:
                 s = st+'.share'
                 sItem.append(s)
             sList.append(sItem)
+        """
         return sList
         
     def rebuilt_listofsharesmessages(self,sList,directorynames=[]):
@@ -450,7 +489,7 @@ class Mysharedfile:
             # directorynames == []
             for j in range(n) :
                 sdir[j] = './shares/shares_of_party_'+str(j)
-                
+        """        
         LOSM = []
         for sItem in sList:
             LOSMitem = []
@@ -464,6 +503,25 @@ class Mysharedfile:
                 share = SSS.bytesToShare(byteshare)
                 LOSMitem.append(share)
             LOSM.append(LOSMitem)
+        """
+        Lshares = []
+        for filename in sList :
+            f = open(filename,'rb')
+            shareList = f.read()
+            f.close()
+            Lshares.append(shareList)
+        
+        def column(L,j):
+            column_j = []
+            for item in L:
+                column_j.append(item[j])
+            return column_j
+            
+        LOSM = []
+        for j in range(len(Lshares[0])):
+            column_j =  column(Lshares,j)
+            LOSM.append(column_j)
+            
         self.listofsharesofmessages = LOSM
         
     def erase_listofsharesmessages(self,sList,directorynames=[]):
@@ -477,7 +535,7 @@ class Mysharedfile:
         else :
             # directorynames == []
             for j in range(n) :
-                sdir[j] = './shares/shares_of_party_'+str(j)+'/'
+                sdir[j] = './shares/shares_of_party_'+str(j)
                 
         for sItem in sList:
             for j in range(n) :

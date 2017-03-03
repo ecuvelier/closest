@@ -431,7 +431,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                     managefiles.uncompress(sharedfile.filename+'.tar.xz',filepath,cd[item]['directory'])
                     os.remove('./recovered files/'+cd[item]['filename']+'.tar.xz')
                     
-                    #tree.set(item,1,'not shared')
+                    tree.set(item,1,'shared')
                     #tree.set(item,2,'')
                     #tree.set(item,3,'')
                     cd[item]['planned'] = False
