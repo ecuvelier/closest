@@ -36,8 +36,8 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     mainframe.rowconfigure(35,weight=1)
     
     
-    mainframe.rowconfigure(20,weight=3)
-    mainframe.columnconfigure(10,weight=3)
+    mainframe.rowconfigure(20,weight=5)
+    mainframe.columnconfigure(10,weight=5)
     mainframe.columnconfigure(20,weight=3)
     mainframe.columnconfigure(30,weight=3)
     
@@ -137,28 +137,28 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     exploframe.grid(column=10,row=20, columnspan = 21, sticky=(N,S,E,W))
     
     addrepo = ttk.Button(exploframe, text="Add a Directory "+string_d, command= lambda : com.adddir(tree,str(mainframe),currentProjects))
-    addrepo.grid(column=3, row=1,sticky=W)
+    addrepo.grid(column=10, row=40,sticky=(W))
     
     addfile = ttk.Button(exploframe, text="Add a File "+string_f, command=lambda : com.addfile(tree,str(mainframe),currentProjects))
-    addfile.grid(column=3, row=2,sticky=W)
+    addfile.grid(column=10, row=50,sticky=(W))
     
     reshare = ttk.Button(exploframe, text="(Re-)Share "+string_s, command=lambda : com.share(tree,str(mainframe),currentProjects,console))
-    reshare.grid(column=3, row=3,sticky=W)
+    reshare.grid(column=30, row=20,sticky=W)
     
     recover = ttk.Button(exploframe, text="Recover "+string_rec, command=lambda : com.recover(tree,str(mainframe),currentProjects,console))
-    recover.grid(column=3, row=4,sticky=W)
+    recover.grid(column=30, row=30,sticky=W)
     
     restore = ttk.Button(exploframe, text="Restore "+string_res, command=lambda : com.restore(tree,str(mainframe),currentProjects,console))
-    restore.grid(column=3, row=5,sticky=W)
-    
-    planactions = ttk.Button(exploframe, text="Plan Actions "+string_p, command=lambda : com.plan_actions(actiontree,str(mainframe),currentProjects))
-    planactions.grid(column=5, row=8,sticky=(E,W))
+    restore.grid(column=30, row=40,sticky=W)
     
     remove = ttk.Button(exploframe, text="Remove "+string_rem, command=lambda : com.remove(tree,actiontree,str(mainframe),currentProjects,console))
-    remove.grid(column=3, row=6,sticky=W)
+    remove.grid(column=30, row=50,sticky=W)
+    
+    planactions = ttk.Button(exploframe, text="Plan Actions "+string_p, command=lambda : com.plan_actions(actiontree,str(mainframe),currentProjects))
+    planactions.grid(column=20, row=80, sticky=(E,W))
     
     tree = ttk.Treeview(exploframe, columns = ['size','status','shared on','exp date','path'])
-    tree.grid(column=5, row=1, rowspan=6, sticky=(N, W, E, S))
+    tree.grid(column=20, row=10,rowspan =60, sticky=(N, W, E, S))
     
     #update = ttk.Button(exploframe, text="Reload Project File/ ",command =com.updateb)
     #update.grid(column=5, row=8,sticky=(E,W))
@@ -194,13 +194,13 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     
     sc1 = ttk.Scrollbar(exploframe, orient=VERTICAL, command=tree.yview)
     tree.configure(yscrollcommand=sc1.set)
-    sc1.grid(column = 6,row = 1, rowspan=6, sticky = (N,S))
+    sc1.grid(column = 25,row = 10, rowspan=60, sticky = (N,S))
     sc1x = ttk.Scrollbar(exploframe, orient=HORIZONTAL, command=tree.xview)
     tree.configure(xscrollcommand=sc1x.set)
-    sc1x.grid(column = 5,row = 7, sticky = (W,E))
+    sc1x.grid(column = 20,row = 70, sticky = (W,E,N))
     
-    exploframe.columnconfigure(5,weight=1)
-    exploframe.rowconfigure(1,weight=1)
+    exploframe.columnconfigure(20,weight=1)
+    exploframe.rowconfigure(10,weight=1)
     
     for child in exploframe.winfo_children(): 
         child.grid_configure(padx=5, pady=5)
@@ -249,7 +249,10 @@ def create_mainframe(parent,currentProjects,projectDic={}):
         add_location(projectDic['locDic'][loc])
    
     checkplaces = ttk.Button(emplaframe, text="Check All",command=lambda: com.checkall())
-    checkplaces.grid(column=10, row=20)
+    checkplaces.grid(column=15, row=20,sticky = E)
+    
+    emplaframe.columnconfigure(15,weight=1)
+    emplaframe.rowconfigure(10,weight=1)
     
     for child in emplaframe.winfo_children(): 
         child.grid_configure(padx=5, pady=5)

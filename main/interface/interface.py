@@ -16,8 +16,6 @@ import interface.commands as com
 #import os
 
 
-
-
 root = Tk()
 root.option_add('*tearOff', FALSE)
 
