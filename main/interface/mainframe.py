@@ -20,6 +20,8 @@ def create_mainframe(parent,currentProjects,projectDic={}):
         projectDic['Nb_of_loc'] = ''
         projectDic['locDic'] = {}
         projectDic['fileDic'] = {}
+        
+    string_sys = currentProjects['sys']
 
         
     mainframe = ttk.Frame(parent, padding=(3,3,12,12))
@@ -100,28 +102,59 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     
     ################ EXPLO FRAME ########################
     
+    if string_sys == 'win32' : # Windows os
+        string_d = ''
+        string_f = ''
+        string_s = '  '
+        string_rec = '  '
+        string_res = ''
+        string_p = ''
+        string_rem = ''
+        string_pwd = ''
+        string_e = ''
+    elif string_sys == 'aqua' : # Mac os
+        string_d = ''
+        string_f = ''
+        string_s = '  '
+        string_rec = '  '
+        string_res = ''
+        string_p = ''
+        string_rem = ''
+        string_pwd = ''
+        string_e = ''
+    else  : # Linux os  (string_sys == 'x11') and others (?)
+        string_d = ''
+        string_f = ''
+        string_s = '  '
+        string_rec = '  '
+        string_res = ''
+        string_p = ''
+        string_rem = ''
+        string_pwd = ''
+        string_e = ''
+    
     exploframe = ttk.Labelframe(mainframe, text='Virtual Repository')
     exploframe.grid(column=10,row=20, columnspan = 21, sticky=(N,S,E,W))
     
-    addrepo = ttk.Button(exploframe, text="Add a Directory ", command= lambda : com.adddir(tree,str(mainframe),currentProjects))
+    addrepo = ttk.Button(exploframe, text="Add a Directory "+string_d, command= lambda : com.adddir(tree,str(mainframe),currentProjects))
     addrepo.grid(column=3, row=1,sticky=W)
     
-    addfile = ttk.Button(exploframe, text="Add a File ", command=lambda : com.addfile(tree,str(mainframe),currentProjects))
+    addfile = ttk.Button(exploframe, text="Add a File "+string_f, command=lambda : com.addfile(tree,str(mainframe),currentProjects))
     addfile.grid(column=3, row=2,sticky=W)
     
-    reshare = ttk.Button(exploframe, text="(Re-)Share   ", command=lambda : com.share(tree,str(mainframe),currentProjects,console))
+    reshare = ttk.Button(exploframe, text="(Re-)Share "+string_s, command=lambda : com.share(tree,str(mainframe),currentProjects,console))
     reshare.grid(column=3, row=3,sticky=W)
     
-    recover = ttk.Button(exploframe, text="Recover   ", command=lambda : com.recover(tree,str(mainframe),currentProjects,console))
+    recover = ttk.Button(exploframe, text="Recover "+string_rec, command=lambda : com.recover(tree,str(mainframe),currentProjects,console))
     recover.grid(column=3, row=4,sticky=W)
     
-    restore = ttk.Button(exploframe, text="Restore ", command=lambda : com.restore(tree,str(mainframe),currentProjects,console))
+    restore = ttk.Button(exploframe, text="Restore "+string_res, command=lambda : com.restore(tree,str(mainframe),currentProjects,console))
     restore.grid(column=3, row=5,sticky=W)
     
-    planactions = ttk.Button(exploframe, text="Plan Actions ", command=lambda : com.plan_actions(actiontree,str(mainframe),currentProjects))
+    planactions = ttk.Button(exploframe, text="Plan Actions "+string_p, command=lambda : com.plan_actions(actiontree,str(mainframe),currentProjects))
     planactions.grid(column=5, row=8,sticky=(E,W))
     
-    remove = ttk.Button(exploframe, text="Remove ", command=lambda : com.remove(tree,actiontree,str(mainframe),currentProjects,console))
+    remove = ttk.Button(exploframe, text="Remove "+string_rem, command=lambda : com.remove(tree,actiontree,str(mainframe),currentProjects,console))
     remove.grid(column=3, row=6,sticky=W)
     
     tree = ttk.Treeview(exploframe, columns = ['size','status','shared on','exp date','path'])
@@ -192,7 +225,7 @@ def create_mainframe(parent,currentProjects,projectDic={}):
         passwordCommandVar = StringVar()
         passwordCommand_entry = ttk.Entry(newlocframe, width=20, textvariable=passwordCommandVar)
         passwordCommand_entry.grid(column=20, row=20, sticky=(W, E))
-        passwordCommand_entry.configure(show='')
+        passwordCommand_entry.configure(show=string_pwd)
         passwordCommand_entry.insert(0,loc['pwd'])
         
         Epochlabel = ttk.Label(newlocframe, text='Epoch: '+loc['e1']+' '+loc['e2'])
@@ -254,7 +287,8 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     delactions = ttk.Button(actionframe, text="Cancel Tasks",command=lambda: com.cancel_tasks(actiontree,str(mainframe),currentProjects,console))
     delactions.grid(column=5, row=10,sticky=(W,E))
     
-    launchactions = ttk.Button(actionframe, text=" Execute Tasks",command=lambda: com.execute_tasks(tree,actiontree,str(mainframe),currentProjects,console,mainframe))
+    
+    launchactions = ttk.Button(actionframe, text= string_e+" Execute Tasks",command=lambda: com.execute_tasks(tree,actiontree,str(mainframe),currentProjects,console,mainframe))
     #TODO: add a functionality to stop the execution of the tasks (modify the appearance of button)
     launchactions.grid(column=6, row=10,sticky=(W,E))
     

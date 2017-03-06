@@ -23,13 +23,15 @@ root.option_add('*tearOff', FALSE)
 
 root.title('Closest -- Cloud Secure Storage via Secret Sharing')
 
+string_sys = root.tk.call('tk', 'windowingsystem')
+
 
 nb = ttk.Notebook(root)
 nb.grid(column=0, row=0, sticky=(N, S, E, W))
 #mainf1 = mf.create_mainframe(nb)
 #nb.add(mainf1, text='Project One')
 
-currentProjects = {} # Dictionary saving the project opened for the session #TODO: save and open project of last sessions
+currentProjects = {'sys':string_sys} # Dictionary saving the project opened for the session #TODO: save and open project of last sessions
 
 
 menubar = Menu(root)
