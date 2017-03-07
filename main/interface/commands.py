@@ -474,6 +474,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                         os.remove('./recovered files/'+cd[item]['filename']+'.tar.xz')
                         tree.set(item,1,'shared')
                         cd[item]['planned'] = False
+                        cd[item]['status'] = 'shared'
                         actiontree.delete(item)
                         WriteConsole(console,fname+' recovered' )
                     

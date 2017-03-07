@@ -22,6 +22,43 @@ def create_mainframe(parent,currentProjects,projectDic={}):
         projectDic['fileDic'] = {}
         
     string_sys = currentProjects['sys']
+    
+    if string_sys == 'win32' : # Windows os
+        string_qc = ''
+        sring_c = ''
+        string_d = ''
+        string_f = ''
+        string_s = '❏ ➔ ☁'
+        string_rec = '☁ ➔ ❏'
+        string_res = ''
+        string_p = '✾'
+        string_rem = '✘'
+        string_pwd = '●'
+        string_e = '►'
+    elif string_sys == 'aqua' : # Mac os
+        string_qc = ''
+        sring_c = ''
+        string_d = ''
+        string_f = ''
+        string_s = '  '
+        string_rec = '  '
+        string_res = ''
+        string_p = ''
+        string_rem = ''
+        string_pwd = ''
+        string_e = ''
+    else  : # Linux os  (string_sys == 'x11') and others (?)
+        string_qc = ''
+        sring_c = '❌'
+        string_d = ''
+        string_f = ''
+        string_s = '  '
+        string_rec = '  '
+        string_res = ''
+        string_p = ''
+        string_rem = ''
+        string_pwd = ''
+        string_e = ''
 
         
     mainframe = ttk.Frame(parent, padding=(3,3,12,12))
@@ -66,11 +103,11 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     toolframe = ttk.Frame(mainframe)
     toolframe.grid(column=30,row=10, sticky=(E))
     
-    bclose = ttk.Button(toolframe, text="Close ❌",command= lambda : com.closetab(parent,mainframe))
+    bclose = ttk.Button(toolframe, text="Close "+string_c,command= lambda : com.closetab(parent,mainframe))
     bclose.grid(column=3, row=0)
     #bopen = ttk.Button(toolframe, text="",command = lambda : com.open_project(parent))
     #bopen.grid(column=1, row=0)
-    bsave = ttk.Button(toolframe, text="Quick Save ", command = lambda : com.quick_save_project(projectDic,console))
+    bsave = ttk.Button(toolframe, text="Quick Save "+string_qc, command = lambda : com.quick_save_project(projectDic,console))
     bsave.grid(column=2, row=0)
     
     
@@ -101,37 +138,6 @@ def create_mainframe(parent,currentProjects,projectDic={}):
         child.grid_configure(padx=5, pady=5)
     
     ################ EXPLO FRAME ########################
-    
-    if string_sys == 'win32' : # Windows os
-        string_d = ''
-        string_f = ''
-        string_s = '❏ ➔ ☁'
-        string_rec = '☁ ➔ ❏'
-        string_res = ''
-        string_p = '✾'
-        string_rem = '✘'
-        string_pwd = '●'
-        string_e = '►'
-    elif string_sys == 'aqua' : # Mac os
-        string_d = ''
-        string_f = ''
-        string_s = '  '
-        string_rec = '  '
-        string_res = ''
-        string_p = ''
-        string_rem = ''
-        string_pwd = ''
-        string_e = ''
-    else  : # Linux os  (string_sys == 'x11') and others (?)
-        string_d = ''
-        string_f = ''
-        string_s = '  '
-        string_rec = '  '
-        string_res = ''
-        string_p = ''
-        string_rem = ''
-        string_pwd = ''
-        string_e = ''
     
     exploframe = ttk.Labelframe(mainframe, text='Virtual Repository')
     exploframe.grid(column=10,row=20, columnspan = 21, sticky=(N,S,E,W))
