@@ -191,12 +191,6 @@ class ShamirSecretSharing(SecretSharingScheme):
         
     def reshare(self,shareslist):
         
-        n = self.n
-        k = len(shareslist)
-        #assert k > self.t # Not enough shares to reconstruct the message!
-        if k < n :
-            print('Warning : shares missing!\n You might want to rebuild the sharing by trigering retrieve(sharelist)->m then share(m).') #TODO: triggering mechanism? 
-        
         shareslistofzero = self.share(self.F.zero())
         newshareslist = []
         
