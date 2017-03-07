@@ -24,13 +24,13 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     string_sys = currentProjects['sys']
     
     if string_sys == 'win32' : # Windows os
-        string_qc = ''
-        sring_c = ''
+        string_qc = '✓'
+        sring_c = '✗'
         string_d = ''
         string_f = ''
         string_s = '❏ ➔ ☁'
         string_rec = '☁ ➔ ❏'
-        string_res = ''
+        string_res = '↻'
         string_p = '✾'
         string_rem = '✘'
         string_pwd = '●'
