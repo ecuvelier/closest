@@ -18,6 +18,7 @@ from secretSharingTools import managefiles
 import pickle
 #import tools.fingexp as fingexp
 from secretSharingTools import secretsharing as ss
+from mathTools import field
 import time
 
 def myrandom(a,b):
@@ -84,10 +85,12 @@ def builtSSS(projDic):
         raise NotImplementedError
         
 def getField(modSize):
-    s = 'F'+modSize
-    f = open('./secretSharingTools/'+s,'rb')
-    Fp = pickle.load(f)
-    f.close()
+    p = field.pDict['p'+modSize]
+    Fp = field.Field(p)
+    #f = open('./secretSharingTools/'+s,'rb')
+    #Fp = pickle.load(f)
+    #f.close()
+    
     return Fp
 
 
@@ -385,17 +388,30 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                     WriteConsole(console,'Re-sharing '+fname)
                     sharedfile = cd[item]['pointer']
                     sharedfile.SSS = SecSharSchem
+                    if cd[item]['directory'] :
+                        sharedfile.filename = cd[item]['filename'][1:]+'.tar.xz'
+                    else :
+                        sharedfile.filename = cd[item]['filename']+'.tar.xz'
                     Ldict = {}
                     sL = sharedfile.recover_List_of_Filename_of_Shares()
+                        
                     for lockey in currentProjects[frameid]['locDic']:
+                        locDir = lockey+'_'+currentProjects[frameid]['locDic'][lockey]['name']
                         j = int(lockey)
-                        Ldict[j] = (dN[j],sL[j])
-                    sharedfile.rebuilt_listofsharesmessages(Ldict)
-                    
-                    new_LOSM = SecSharSchem.reshare(sharedfile.listofsharesofmessages)
+                        Ldict[j] = (locDir,sL[j])
+                        
+                    ErrorList = sharedfile.rebuilt_listofsharesmessages(Ldict)
+                    for error in ErrorList :
+                        WriteConsole(console,'share stored at '+error+' of '+fname+' not found and thus not re-shared' )
+                        
+                    new_LOSM = SecSharSchem.resharelist(sharedfile.listofsharesofmessages)
                     sharedfile.listofsharesofmessages = new_LOSM
                     
-                    sharedfile.erase_listofsharesmessages(Ldict)
+                    ErrorList = sharedfile.erase_listofsharesmessages(Ldict)
+                    for error in ErrorList :
+                        WriteConsole(console,'share stored at '+error+' of '+fname+' not found and thus not removed' )
+                    
+                    #sharedfile.filename = cd[item]['filename']
                 
                 sharedfile.saveShares(directorynames = dN) #TODO : Save the shares in the correct locations and not in directories
                       
@@ -423,7 +439,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                 else : # itemStatus == 'to-re-share'
                     WriteConsole(console,fname+' re-shared' )
                 
-                quick_save_project(currentProjects[frameid],console)
+                #quick_save_project(currentProjects[frameid],console)
                 
             elif itemStatus == 'to recover' or itemStatus == 'to remove':
                 if itemStatus == 'to remove' :
@@ -478,13 +494,14 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                         actiontree.delete(item)
                         WriteConsole(console,fname+' recovered' )
                     
-                quick_save_project(currentProjects[frameid],console)
+                
                 
     #progBar.stop()
     for k in list(cd) :
         if cd[k] == 'deleted':
             cd.pop(k)
     #unfreeze(p_win, pBar)
+    quick_save_project(currentProjects[frameid],console)
     
 
 ######### CONSOLE FRAME ###########

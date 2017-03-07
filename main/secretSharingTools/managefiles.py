@@ -562,7 +562,7 @@ class Mysharedfile:
                 
 
     def __str__(self):
-        s = 'Pointer to '+self.filename+'\n this pointer uses the SSS '+str(self.SSS)+'\n stored in '+self.filenameofSSS
+        s = 'Pointer to '+self.filename+'\n this pointer uses the SSS '+str(self.SSS)+' stored in '+self.filenameofSSS
         return s
         
     def __repr__(self):

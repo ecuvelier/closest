@@ -46,6 +46,15 @@ class SecretSharingScheme:
             messageslist.append(message)
         return messageslist
         
+    def resharelist(self,listofsharesofmessages):
+        
+        new_listofsharesofmessages = []
+        for shareslist in listofsharesofmessages :
+            #print('sl',shareslist)
+            new_shareslist = self.reshare(shareslist)
+            new_listofsharesofmessages.append(new_shareslist)
+        return new_listofsharesofmessages
+        
     def reshare(self,shareslist):
         raise NotImplementedError('subclasses must override reshare()!')
         
@@ -184,7 +193,7 @@ class ShamirSecretSharing(SecretSharingScheme):
         
         n = self.n
         k = len(shareslist)
-        assert k > self.t # Not enough shares to reconstruct the message!
+        #assert k > self.t # Not enough shares to reconstruct the message!
         if k < n :
             print('Warning : shares missing!\n You might want to rebuild the sharing by trigering retrieve(sharelist)->m then share(m).') #TODO: triggering mechanism? 
         
@@ -193,7 +202,9 @@ class ShamirSecretSharing(SecretSharingScheme):
         
         for x,y in shareslistofzero :
             for z,w in shareslist :
+                #print('here',x,z,x==z,x.val==z.val,x.F==z.F)
                 if x == z :
+                    
                     newshareslist.append((x,w+y))
                     break
         
@@ -312,3 +323,4 @@ class ShamirSecretSharing(SecretSharingScheme):
         
     def __str__(self):
         return 't-out-of-n Shamir Secret Sharing Scheme with the following parameters:\n Field :'+str(self.F)+'\n n :'+str(self.n)+'\n t :'+str(self.t)
+        
