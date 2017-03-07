@@ -348,7 +348,7 @@ def cancel_tasks(actiontree,frameid,currentProjects,console):
 
 def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
     
-    p_win, pBar = freeze(parent)
+    #p_win, pBar = freeze(parent)
     try :
         os.mkdir('./recovered files/')
     except :
@@ -483,7 +483,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
     for k in list(cd) :
         if cd[k] == 'deleted':
             cd.pop(k)
-    unfreeze(p_win, pBar)
+    #unfreeze(p_win, pBar)
     
 
 ######### CONSOLE FRAME ###########
