@@ -348,7 +348,7 @@ class Mysharedfile:
         
         return s
         
-    def saveShares(self,directorynames = [], numberofparties = 0 ,pBar = None, progStep = 0):
+    def saveShares(self,directorynames = [], numberofparties = 0 ):
         """
         This saves the shares into files (using pickles) that are stored into
         ./directory/sharej where j range from 0 to numberofshares
@@ -388,12 +388,12 @@ class Mysharedfile:
         r2 = len(self.listofsharesofmessages[0])
         #Loneshare = [0]*r1
         #Lshares = [Loneshare]*r2
-        Lfiles = []
+        Ldict = {}
         for j in range(r2):
             spre = str(self.salt)+self.filename+'_shares_for_party_'+str(j)
             st = hashname(spre)
-            sj = sdir[j]+'/'+st+'.share'
-            Lfiles.append(sj)
+            sj = st+'.share'
+            Ldict[j] = (sdir[j],sj)
             
         def row(L,i):
             '''
@@ -406,8 +406,8 @@ class Mysharedfile:
             
         for j in range(r2) :
             row_j = row(self.listofsharesofmessages,j)
-            sj = Lfiles[j]
-            fj = open(sj,'wb')
+            sdirj, sj = Ldict[j]
+            fj = open(sdirj+'/'+sj,'wb')
             pickle.dump(row_j,fj)
             fj.close()
                 
@@ -438,7 +438,7 @@ class Mysharedfile:
             sList.append(sItem)
         """
                 
-        return Lfiles
+        return Ldict
         
     def recover_List_of_Filename_of_Shares(self,salt = 0,numberofparties = 0, numberofmessages = 0):
         sList = []
@@ -477,10 +477,13 @@ class Mysharedfile:
         """
         return sList
         
-    def rebuilt_listofsharesmessages(self,sList,directorynames=[]):
+    def rebuilt_listofsharesmessages(self,Ldict):
+        """ 
         SSS = self.SSS
         n = SSS.n
         sdir = [0]*n
+        
+        
         if directorynames != [] :
             n = len(directorynames)
             for j in range(n):
@@ -489,7 +492,7 @@ class Mysharedfile:
             # directorynames == []
             for j in range(n) :
                 sdir[j] = './shares/shares_of_party_'+str(j)
-        """        
+               
         LOSM = []
         for sItem in sList:
             LOSMitem = []
@@ -505,9 +508,10 @@ class Mysharedfile:
             LOSM.append(LOSMitem)
         """
         Lshares = []
-        for filename in sList :
-            f = open(filename,'rb')
-            shareList = f.read()
+        for key in Ldict :
+            sdirj,sj = Ldict[key]  
+            f = open(sdirj+'/'+sj,'rb')
+            shareList = pickle.load(f)
             f.close()
             Lshares.append(shareList)
         
@@ -524,7 +528,8 @@ class Mysharedfile:
             
         self.listofsharesofmessages = LOSM
         
-    def erase_listofsharesmessages(self,sList,directorynames=[]):
+    def erase_listofsharesmessages(self,Ldict):
+        '''
         SSS = self.SSS
         n = SSS.n
         sdir = [0]*n
@@ -536,11 +541,12 @@ class Mysharedfile:
             # directorynames == []
             for j in range(n) :
                 sdir[j] = './shares/shares_of_party_'+str(j)
+        '''
                 
-        for sItem in sList:
-            for j in range(n) :
-                s = sdir[j]+'/'+sItem[j]
-                os.remove(s)
+        for key in Ldict:
+            sdirj,sj = Ldict[key]
+            s = sdirj+'/'+sj
+            os.remove(s)
                 
         
     def __str__(self):

@@ -99,7 +99,11 @@ def new_project(root,nb,currentProjects):
 def save_project(nb,currentProjects):
     
     tabname = nb.select()
-    projectDic = currentProjects[tabname]
+    try :
+        projectDic = currentProjects[tabname]
+    except KeyError :
+        messagebox.showinfo(message='No project to save...' )
+        return
     pDcopy = projectDic.copy()
     pDcopy['builtSSS']  = None #Do not save the SSS used (redundant)
 
@@ -235,9 +239,12 @@ def share(tree,frameid,currentProjects,console):
     errorList = []
     for item in tree.selection() :
         currentStatus = currentProjects[frameid]['fileDic'][item]['status']
-        if currentStatus == 'not shared' or currentStatus == 'to share' :
+        if currentStatus == 'not shared' :
             currentProjects[frameid]['fileDic'][item]['status']= 'to share'
             tree.set(item,1,'to share')
+        elif currentStatus == 'shared' :
+            currentProjects[frameid]['fileDic'][item]['status']= 'to re-share'
+            tree.set(item,1,'to re-share')
         else :
             errorList.append((currentProjects[frameid]['fileDic'][item]['filename'],currentStatus))
             
@@ -251,7 +258,7 @@ def recover(tree,frameid,currentProjects,console):
     errorList = []
     for item in tree.selection() :
         currentStatus = currentProjects[frameid]['fileDic'][item]['status']
-        if currentStatus == 'shared' or currentStatus == 'to recover' :
+        if currentStatus == 'shared' or currentStatus == 'to recover' or currentStatus == 'to re-share':
             currentProjects[frameid]['fileDic'][item]['status']= 'to recover'
             tree.set(item,1,'to recover')
         else :
@@ -269,7 +276,7 @@ def restore(tree,frameid,currentProjects,console):
             currentProjects[frameid]['fileDic'][item]['status']= 'not shared'
             currentProjects[frameid]['fileDic'][item]['planned']= False
             tree.set(item,1,'not shared')
-        elif currentStatus == 'to remove' or currentStatus == 'to recover' :
+        elif currentStatus == 'to remove' or currentStatus == 'to recover' or currentStatus == 'to re-share':
             currentProjects[frameid]['fileDic'][item]['status']= 'shared'
             currentProjects[frameid]['fileDic'][item]['planned']= False
             tree.set(item,1,'shared')
@@ -285,6 +292,9 @@ def plan_actions(actiontree,frameid,currentProjects):
             if itemStatus == 'to share' :
                 actiontree.insert('', 'end',item, text='share '+d[item]['filename'])
                 d[item]['planned'] = True
+            elif itemStatus == 'to re-share' :
+                actiontree.insert('', 'end',item, text='re-share '+d[item]['filename'])
+                d[item]['planned'] = True
             elif itemStatus == 'to recover' :
                 actiontree.insert('', 'end',item, text='recover '+d[item]['filename'])
                 d[item]['planned'] = True
@@ -298,7 +308,7 @@ def plan_actions(actiontree,frameid,currentProjects):
 def remove(tree,actiontree,frameid,currentProjects,console):
     for item in tree.selection() :
         currentStatus = currentProjects[frameid]['fileDic'][item]['status']
-        if currentStatus == 'shared' or currentStatus == 'to recover' or currentStatus == 'to remove':
+        if currentStatus == 'shared' or currentStatus == 'to recover' or currentStatus == 'to remove' or currentStatus == 'to re-share':
             currentProjects[frameid]['fileDic'][item]['status']= 'to remove'
             tree.set(item,1,'to remove')
         else :
@@ -358,24 +368,35 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
             fname = cd[item]['filename']
             itemStatus = cd[item]['status']
             
-            if itemStatus == 'to share':
-                WriteConsole(console,'Sharing '+fname)
-                
-                compressedfilename = managefiles.compress(fname,item,cd[item]['directory'])
-                
+            if itemStatus == 'to share' or itemStatus == 'to re-share':
                 SecSharSchem =  currentProjects[frameid]['builtSSS']
-                
-                sharedfile = managefiles.Mysharedfile(compressedfilename, SSS = SecSharSchem )
-                sharedfile.sharefile() #Build the list of shares
-                #k = (sharedfile.numberofmessages)*(SecSharSchem.n)
-                #print(sharedfile.numberofmessages)
-                #print(SecSharSchem.n)
-                #st2 = st1/k
                 dN = []
                 for lockey in currentProjects[frameid]['locDic']:
                     locDir = lockey+'_'+currentProjects[frameid]['locDic'][lockey]['name']
                     dN.append(locDir)
                 dN.sort()
+                
+                if itemStatus == 'to share' :
+                    WriteConsole(console,'Sharing '+fname)
+                    compressedfilename = managefiles.compress(fname,item,cd[item]['directory'])
+                    sharedfile = managefiles.Mysharedfile(compressedfilename, SSS = SecSharSchem )
+                    sharedfile.sharefile() #Build the list of share
+                else : # itemStatus == 'to-re-share'
+                    WriteConsole(console,'Re-sharing '+fname)
+                    sharedfile = cd[item]['pointer']
+                    sharedfile.SSS = SecSharSchem
+                    Ldict = {}
+                    sL = sharedfile.recover_List_of_Filename_of_Shares()
+                    for lockey in currentProjects[frameid]['locDic']:
+                        j = int(lockey)
+                        Ldict[j] = (dN[j],sL[j])
+                    sharedfile.rebuilt_listofsharesmessages(Ldict)
+                    
+                    new_LOSM = SecSharSchem.reshare(sharedfile.listofsharesofmessages)
+                    sharedfile.listofsharesofmessages = new_LOSM
+                    
+                    sharedfile.erase_listofsharesmessages(Ldict)
+                
                 sharedfile.saveShares(directorynames = dN) #TODO : Save the shares in the correct locations and not in directories
                       
                 tree.set(item,1,'shared')
@@ -395,9 +416,13 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                 sharedfile.listofsharesofmessages = [] # Erase lsm
                 cd[item]['pointer'] = sharedfile
                 
-                os.remove(compressedfilename)
                 
-                WriteConsole(console,fname+' shared' )
+                if itemStatus == 'to share' :
+                    os.remove(compressedfilename)
+                    WriteConsole(console,fname+' shared' )
+                else : # itemStatus == 'to-re-share'
+                    WriteConsole(console,fname+' re-shared' )
+                
                 quick_save_project(currentProjects[frameid],console)
                 
             elif itemStatus == 'to recover' or itemStatus == 'to remove':
@@ -409,23 +434,31 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                 SecSharSchem =  currentProjects[frameid]['builtSSS']
                 
                 sharedfile = cd[item]['pointer']
+                if cd[item]['directory'] :
+                    sharedfile.filename = cd[item]['filename'][1:]+'.tar.xz'
+                else :
+                    sharedfile.filename = cd[item]['filename']+'.tar.xz'
                 sharedfile.SSS = SecSharSchem
+                Ldict = {}
                 sL = sharedfile.recover_List_of_Filename_of_Shares()
-                dN = []
+                #dN = []
                 for lockey in currentProjects[frameid]['locDic']:
                     locDir = lockey+'_'+currentProjects[frameid]['locDic'][lockey]['name']
-                    dN.append(locDir)
-                dN.sort()
+                    #dN.append(locDir)
+                    j = int(lockey)
+                    Ldict[j] = (locDir,sL[j])
+                #dN.sort()
                 
                 if itemStatus == 'to remove' :
-                    sharedfile.erase_listofsharesmessages(sL,dN)
+                    sharedfile.erase_listofsharesmessages(Ldict)
                     actiontree.delete(item)
                     tree.delete(item)
+                    cd[item] = 'deleted'
                     WriteConsole(console,fname+' removed (shares removed as well)')
                 else : #itemStatus == 'to recover'
-                    sharedfile.rebuilt_listofsharesmessages(sL,dN)
+                    sharedfile.rebuilt_listofsharesmessages(Ldict)
+                    filepath = './recovered files/'+cd[item]['filename']+'.tar.xz'
                     sharedfile.filename = './recovered files/'+cd[item]['filename']+'.tar.xz'
-                    filepath = sharedfile.filename
                     sharedfile.rebuildfile()
                     sharedfile.filename = cd[item]['filename']
                     managefiles.uncompress(sharedfile.filename+'.tar.xz',filepath,cd[item]['directory'])
@@ -444,7 +477,10 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                     
                 quick_save_project(currentProjects[frameid],console)
                 
-    #progBar.stop()    
+    #progBar.stop()
+    for k in list(cd) :
+        if cd[k] == 'deleted':
+            cd.pop(k)
     unfreeze(p_win, pBar)
     
 
