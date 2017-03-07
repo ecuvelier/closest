@@ -25,7 +25,7 @@ def create_mainframe(parent,currentProjects,projectDic={}):
     
     if string_sys == 'win32' : # Windows os
         string_qc = '✓'
-        sring_c = '✗'
+        string_c = '✗'
         string_d = ''
         string_f = ''
         string_s = '❏ ➔ ☁'
@@ -37,7 +37,7 @@ def create_mainframe(parent,currentProjects,projectDic={}):
         string_e = '►'
     elif string_sys == 'aqua' : # Mac os
         string_qc = ''
-        sring_c = ''
+        string_c = ''
         string_d = ''
         string_f = ''
         string_s = '  '
@@ -49,7 +49,7 @@ def create_mainframe(parent,currentProjects,projectDic={}):
         string_e = ''
     else  : # Linux os  (string_sys == 'x11') and others (?)
         string_qc = ''
-        sring_c = '❌'
+        string_c = '❌'
         string_d = ''
         string_f = ''
         string_s = '  '
