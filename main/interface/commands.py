@@ -450,30 +450,32 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
                 #dN.sort()
                 
                 if itemStatus == 'to remove' :
-                    sharedfile.erase_listofsharesmessages(Ldict)
+                    ErrorList = sharedfile.erase_listofsharesmessages(Ldict)
+                    for error in ErrorList :
+                        WriteConsole(console,'share stored at '+error+' of '+fname+' not found and thus not deleted' )
                     actiontree.delete(item)
                     tree.delete(item)
                     cd[item] = 'deleted'
-                    WriteConsole(console,fname+' removed (shares removed as well)')
+                    WriteConsole(console,fname+' removed (modulo errors)')
                 else : #itemStatus == 'to recover'
-                    sharedfile.rebuilt_listofsharesmessages(Ldict)
+                    ErrorList = sharedfile.rebuilt_listofsharesmessages(Ldict)
+                    for error in ErrorList :
+                        WriteConsole(console,'share stored at '+error+' of '+fname+' not found' )
+                    
                     filepath = './recovered files/'+cd[item]['filename']+'.tar.xz'
                     sharedfile.filename = './recovered files/'+cd[item]['filename']+'.tar.xz'
-                    sharedfile.rebuildfile()
-                    sharedfile.filename = cd[item]['filename']
-                    managefiles.uncompress(sharedfile.filename+'.tar.xz',filepath,cd[item]['directory'])
-                    os.remove('./recovered files/'+cd[item]['filename']+'.tar.xz')
-                    
-                    tree.set(item,1,'shared')
-                    #tree.set(item,2,'')
-                    #tree.set(item,3,'')
-                    cd[item]['planned'] = False
-                    #cd[item]['shadate'] = ''
-                    #cd[item]['expdate'] = ''
-                    #cd[item]['status'] = 'not shared'
-                    actiontree.delete(item)
-                
-                    WriteConsole(console,fname+' recovered' )
+                    try :
+                        sharedfile.rebuildfile()
+                    except AssertionError :
+                        WriteConsole(console,'Not enough shares to reconstruct '+fname )
+                    else :
+                        sharedfile.filename = cd[item]['filename']
+                        managefiles.uncompress(sharedfile.filename+'.tar.xz',filepath,cd[item]['directory'])
+                        os.remove('./recovered files/'+cd[item]['filename']+'.tar.xz')
+                        tree.set(item,1,'shared')
+                        cd[item]['planned'] = False
+                        actiontree.delete(item)
+                        WriteConsole(console,fname+' recovered' )
                     
                 quick_save_project(currentProjects[frameid],console)
                 

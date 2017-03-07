@@ -314,6 +314,7 @@ class Mysharedfile:
         assert self.listofsharesofmessages != []
         
         ML = self.SSS.retrievelist(self.listofsharesofmessages)
+
         bx = self.SSS.decode(ML)
         sb = removeEndBytes(bx)
         
@@ -508,12 +509,17 @@ class Mysharedfile:
             LOSM.append(LOSMitem)
         """
         Lshares = []
+        ErrorList = []
         for key in Ldict :
             sdirj,sj = Ldict[key]  
-            f = open(sdirj+'/'+sj,'rb')
-            shareList = pickle.load(f)
-            f.close()
-            Lshares.append(shareList)
+            try :
+                f = open(sdirj+'/'+sj,'rb')
+            except FileNotFoundError :
+                ErrorList.append(sdirj+'/'+sj)
+            else :
+                shareList = pickle.load(f)
+                f.close()
+                Lshares.append(shareList)
         
         def column(L,j):
             column_j = []
@@ -527,6 +533,7 @@ class Mysharedfile:
             LOSM.append(column_j)
             
         self.listofsharesofmessages = LOSM
+        return ErrorList
         
     def erase_listofsharesmessages(self,Ldict):
         '''
@@ -542,13 +549,18 @@ class Mysharedfile:
             for j in range(n) :
                 sdir[j] = './shares/shares_of_party_'+str(j)
         '''
-                
+        ErrorList = []      
         for key in Ldict:
             sdirj,sj = Ldict[key]
             s = sdirj+'/'+sj
-            os.remove(s)
+            try :
+                os.remove(s)
+            except FileNotFoundError :
+                ErrorList.append(s)
                 
-        
+        return ErrorList
+                
+
     def __str__(self):
         s = 'Pointer to '+self.filename+'\n this pointer uses the SSS '+str(self.SSS)+'\n stored in '+self.filenameofSSS
         return s
