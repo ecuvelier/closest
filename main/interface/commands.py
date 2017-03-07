@@ -492,6 +492,7 @@ def WriteConsole(console,message):
     console.config(state=NORMAL)
     console.insert('end','\n>>> '+message)
     console.config(state=DISABLED)
+    console.see('end')
 
         
 ################## PROJECT WINDOW ####################################
