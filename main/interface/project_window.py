@@ -28,14 +28,14 @@ def create_project_window(root,nb,currentProjects):
     menubar.add_cascade(menu=menu_project, label='Project')
     menubar.add_cascade(menu=menu_synch, label='Locations')
     
-    menu_project.add_command(label='Open Project',command = lambda : com.open_modify_project(nb))
+    menu_project.add_command(label='Open Project',command = lambda : com.open_modify_project(root,projectwindow))
     menu_project.add_command(label='Save Project',command = lambda : com.save_edited_project(nb))
     
-    menu_synch.add_command(label='Synchronize Epoch',command = lambda : com.synch_epoch(None))
-    menu_synch.add_command(label='Synchronize Delta Epoch',command = lambda : com.synch_depoch(None))
+    menu_synch.add_command(label='Synchronize Epoch',command = lambda : com.synch_epoch(projectwindow,LocationDic))
+    menu_synch.add_command(label='Synchronize Delta Epoch',command = lambda : com.synch_epoch(projectwindow,LocationDic,True))
     menu_synch.add_separator()
     checkPMVar = StringVar()
-    menu_synch.add_checkbutton(label='Always Use Pattern Masking',command = com.synch_pm, variable=checkPMVar, onvalue=1, offvalue=0)
+    menu_synch.add_checkbutton(label='Always Use Pattern Masking',command = lambda : com.synch_pm(LocationDic,checkPMVar), variable=checkPMVar, onvalue=1, offvalue=0)
     
     ################ PARAMETERS FRAME ########################
         

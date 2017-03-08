@@ -26,4 +26,7 @@ def create_proccessing_window(parent):
     proccesingwindow.minsize(proccesingwindow.winfo_width(), proccesingwindow.winfo_height())
     proccesingwindow.resizable(FALSE,FALSE)
     
+    for child in mframe.winfo_children(): 
+            child.grid_configure(padx=5, pady=5)
+    
     return proccesingwindow,progBar

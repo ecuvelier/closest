@@ -50,7 +50,7 @@ menu_project.add_command(label='Save Project',command = lambda : com.save_projec
 #menu_project.add_command(label='Copy Project')
 menu_project.add_separator()
 menu_project.add_command(label='Modify Project',command = lambda : com.modify_project(nb,currentProjects))
-
+menu_project.add_command(label='Print Project',command = lambda : com.print_project_in_console(nb,currentProjects))
 
 
 root.columnconfigure(0, weight=1)

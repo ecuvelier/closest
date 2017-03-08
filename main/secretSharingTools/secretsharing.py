@@ -316,5 +316,5 @@ class ShamirSecretSharing(SecretSharingScheme):
         return ai,si
         
     def __str__(self):
-        return 't-out-of-n Shamir Secret Sharing Scheme with the following parameters:\n Field :'+str(self.F)+'\n n :'+str(self.n)+'\n t :'+str(self.t)
+        return 't-out-of-n Shamir Secret Sharing Scheme with the following parameters:\n Field :'+str(self.F)[:min(10,len(str(self.F)))]+'\n n :'+str(self.n)+'\n t :'+str(self.t)
         

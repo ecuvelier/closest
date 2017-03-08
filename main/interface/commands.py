@@ -80,18 +80,25 @@ def builtSSS(projDic):
     SSS_modsize = projDic['Mod']
     if SSSType == 'Shamir' :
         Fp = getField(SSS_modsize)
-        return ss.ShamirSecretSharing(Fp,SSSThreshold,SSS_n)
+        if not Fp == None :
+            return ss.ShamirSecretSharing(Fp,SSSThreshold,SSS_n)
+        else :
+            return None 
     else :
         raise NotImplementedError
         
 def getField(modSize):
-    p = field.pDict['p'+modSize]
-    Fp = field.Field(p)
-    #f = open('./secretSharingTools/'+s,'rb')
-    #Fp = pickle.load(f)
-    #f.close()
-    
-    return Fp
+    #p = field.pDict['p'+modSize]
+    #Fp = field.Field(p)
+    s = 'F'+modSize
+    try :
+        f = open('./secretSharingTools/'+s,'rb')
+    except FileNotFoundError :
+        return None
+    else :
+        Fp = pickle.load(f)
+        f.close()
+        return Fp
 
 
 ################### MENU INTERFACE ################################
@@ -132,16 +139,24 @@ def open_project(nb,currentProjects):
         if not type(projectDic) == dict :
             messagebox.showinfo(message='Unable to exctract the project from '+filename+'\n\n (dict error)', icon = 'error' )
             return
-        print(projectDic)
+        #print(projectDic)
         newframe = mf.create_mainframe(nb,currentProjects,projectDic)
         #print(newframe)
         currentProjects[str(newframe)] = projectDic
-        currentProjects[str(newframe)]['builtSSS'] = builtSSS(projectDic)
-        nb.add(newframe, text=projectDic['name'])
+        bS = builtSSS(projectDic)
+        if bS == None :
+            messagebox.showinfo(message='Unable to build the secret sharing scheme.', icon = 'error' )
+        else :
+            currentProjects[str(newframe)]['builtSSS'] = bS
+            nb.add(newframe, text=projectDic['name'])
     
 def modify_project(*args):
     messagebox.showinfo(message='Not Implemented Yet')
     pass
+
+def print_project_in_console(nb,currentProjects):
+    tabname = nb.select()
+    messagebox.showinfo(message='Current Project dictionary: '+str(currentProjects[tabname]))
 
 def about(root):
     print(root.winfo_width(), root.winfo_height())
@@ -351,7 +366,7 @@ def cancel_tasks(actiontree,frameid,currentProjects,console):
 
 def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
     
-    #p_win, pBar = freeze(parent)
+    p_win, pBar = freeze(parent)
     try :
         os.mkdir('./recovered files/')
     except :
@@ -500,7 +515,7 @@ def execute_tasks(tree,actiontree,frameid,currentProjects,console,parent):
     for k in list(cd) :
         if cd[k] == 'deleted':
             cd.pop(k)
-    #unfreeze(p_win, pBar)
+    unfreeze(p_win, pBar)
     quick_save_project(currentProjects[frameid],console)
     
 
@@ -537,27 +552,79 @@ def save_open_project(root,win,nb,projectDic,currentProjects):
     
     root.mainloop()
 
-def open_modify_project(nb):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+def open_modify_project(root,projectwindow):
+    r = messagebox.askyesno(message='Opening a new project will close the current project.\n Are you sure?',icon='question', title='Opening Project')
+    if r :
+        projectwindow.destroy()
+        messagebox.showinfo(message='Not Implemented Yet')
 
 def save_edited_project(nb):
     messagebox.showinfo(message='Not Implemented Yet')
     pass
+
+def synch_epoch(parent,LocationDic,dB = False):
+    epochwindow = Toplevel(parent)
+    if not dB :
+        epochwindow.title('Synchronized epoch')
+    else :
+        epochwindow.title('Synchronized delta of epoch')
+    
+    mframe = ttk.Frame(epochwindow, padding=(3,3,12,12))
+    mframe.grid(column=10,row=10, sticky=(N,S,E,W))
+    
+    Nv = ('1','2','3','4','5','6','7','8','9','10','11')
+    Mv = ('day(s)','week(s)','month(s)','year(s)')
         
-def synch_epoch(*args):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+    Epochlabel = ttk.Label(mframe, text='Epoch :')
+    Epochlabel.grid(column=10, row=10, sticky=(W, E))
+    EpochVar1 = StringVar()
+    EpochCB1 = ttk.Combobox(mframe, textvariable=EpochVar1)
+    EpochCB1.grid(column=20, row=10, sticky=(W, E))
+    EpochCB1['values'] = Nv
+    EpochCB1.configure(state='readonly')
+    EpochCB1.current(2)
+        
+    EpochVar2 = StringVar()
+    EpochCB2 = ttk.Combobox(mframe, textvariable=EpochVar2)
+    EpochCB2.grid(column=30, row=10, sticky=(W, E))
+    EpochCB2['values'] = Mv
+    EpochCB2.configure(state='readonly')
+    EpochCB2.current(2)
+    
+    def Ok():
+        newe1 = EpochVar1.get()
+        newe2 = EpochVar2.get()
+        for key in LocationDic:
+            location = LocationDic[key]
+            if not dB :
+                location['e1'].set(newe1)
+                location['e2'].set(newe2)
+            else :
+                location['de1'].set(newe1)
+                location['de2'].set(newe2)
+        epochwindow.destroy()
 
-def synch_depoch(*args):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+    
+    OKButton = ttk.Button(mframe, text="OK",command= lambda : Ok())
+    OKButton.grid(column=10, row=20)
+    CancelButton = ttk.Button(mframe, text="Cancel",command= lambda : epochwindow.destroy())
+    CancelButton.grid(column=20, row=20)
+    
+    for child in mframe.winfo_children():
+        child.grid_configure(padx=5, pady=5)
 
-def synch_pm(*args):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+
+def synch_pm(LocationDic,checkPMVar):
+    for key in LocationDic:
+        location = LocationDic[key]
+        if checkPMVar.get() == '1' :
+            location['pm'].set('Pattern Masking Enabled')
+        else :
+            location['pm'].set('Pattern Masking Disabled')
+    #messagebox.showinfo(message='Not Implemented Yet')
+    #pass
 
 def cancel_project(root,projectwindow):
-    messagebox.showinfo(message='Not Implemented Yet')
-    pass
+    projectwindow.destroy()
+    root.mainloop()
     
