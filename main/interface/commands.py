@@ -92,7 +92,7 @@ def getField(modSize):
     #Fp = field.Field(p)
     s = 'F'+modSize
     try :
-        f = open('./secretSharingTools/'+s,'rb')
+        f = open('./Fields/'+s,'rb')
     except FileNotFoundError :
         return None
     else :
