@@ -18,7 +18,7 @@ from secretSharingTools import managefiles
 import pickle
 #import tools.fingexp as fingexp
 from secretSharingTools import secretsharing as ss
-from mathTools import field
+#from mathTools import field
 import time
 
 def myrandom(a,b):
